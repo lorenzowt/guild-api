@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Http\Requests\RegisterUserRequest;
+use App\Enums\UserRole;
 
 class AuthController extends Controller
 {
@@ -19,7 +20,7 @@ class AuthController extends Controller
         return response()->json([
             'name' => $user->name,
             'email' => $user->email,
-            'role' => $user->role,
+            'role' => UserRole::User->value,
             'created_at' =>$user->created_at,
         ], 201);
     }

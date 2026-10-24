@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Hash;
 
 uses(RefreshDatabase::class);
 
-test('a visitor can register an account (password gets hashed and never returned)', function () {
+test('a visitor can register an account (password gets hashed and never returned', function () {
     $response = $this->postJson('/api/register', [
         'name' => 'Test Name',
         'email' => 'test@example.com',
