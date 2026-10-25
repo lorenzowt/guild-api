@@ -49,3 +49,21 @@ test('a user cannot log in with incorrect password', function () {
         ]);
 
 });
+
+test('a user cannot log in with incorrect email', function () {
+
+    $user = User::factory()->create([
+        'password' => 'password123',
+    ]);
+
+    $response = $this->postJson('/api/login', [
+        'email' => 'wrogn@email.com',
+        'password' => 'password123',
+    ]);
+
+    $response->assertUnauthorized()
+        ->assertJson([
+            'message' => 'Invalid credentials'
+        ]);
+
+});
