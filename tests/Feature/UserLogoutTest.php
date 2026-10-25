@@ -45,3 +45,9 @@ test('a user can log out and their token is revoked', function () {
 
     $protectedResponse->assertUnauthorized();
 });
+
+test('an unauthenticated user cannot log out', function () {
+    $response = $this->postJson('/api/logout');
+
+    $response->assertUnauthorized();
+});
