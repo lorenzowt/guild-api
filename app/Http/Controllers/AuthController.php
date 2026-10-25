@@ -37,7 +37,7 @@ class AuthController extends Controller
         
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             return response()->json([
-                'message' => 'Invalid credentials',
+                'message' => 'Invalid credentials.',
             ], 401);
         }
 
@@ -46,6 +46,15 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->token()->revoke();
+
+        return response()->json([
+            'message' => 'Successfully logged out.',
         ]);
     }
 }
