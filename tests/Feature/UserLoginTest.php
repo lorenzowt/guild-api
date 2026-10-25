@@ -82,3 +82,16 @@ test('a user cannot log in with missing email', function () {
 
 });
 
+test('a user cannot log in with missing password', function () {
+
+    $user = User::factory()->create([
+        'password' => 'password123',
+    ]);
+
+    $response = $this->postJson('/api/login', [
+        'email' => $user->email,
+    ]);
+
+    $response->assertUnprocessable();
+
+});
