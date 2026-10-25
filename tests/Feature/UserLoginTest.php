@@ -14,7 +14,7 @@ test('a user can log in with valid credentials', function () {
         'name' => 'Guild API',
         'provider' => 'users',
     ]);
-    
+
     $user = User::factory()->create([
         'password' => 'password123',
     ]);
@@ -30,4 +30,22 @@ test('a user can log in with valid credentials', function () {
             'token_type',
         ])
         ->assertJsonPath('token_type', 'Bearer');
+});
+
+test('a user cannot log in with incorrect password', function () {
+
+    $user = User::factory()->create([
+        'password' => 'password123',
+    ]);
+
+    $response = $this->postJson('/api/login', [
+        'email' => $user->email,
+        'password' => 'wrong-password',
+    ]);
+
+    $response->assertUnauthorized()
+        ->assertJson([
+            'message' => 'Invalid credentials'
+        ]);
+
 });
