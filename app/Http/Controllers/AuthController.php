@@ -37,7 +37,7 @@ class AuthController extends Controller
         
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             return response()->json([
-                'message' => 'Invalid credentials',
+                'message' => 'Invalid credentials.',
             ], 401);
         }
 
@@ -54,7 +54,7 @@ class AuthController extends Controller
         $request->user()->token()->revoke();
 
         return response()->json([
-            'message' => 'Successfully logged out',
+            'message' => 'Successfully logged out.',
         ]);
     }
 }
