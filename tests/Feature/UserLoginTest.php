@@ -1,10 +1,20 @@
 <?php
 
 use App\Models\User;
-use App\Http\Controllers\AuthController;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Passport\Client;
+
+uses(RefreshDatabase::class);
+
 
 test('a user can log in with valid credentials', function () {
+    Client::factory()
+    ->asPersonalAccessTokenClient()
+    ->create([
+        'name' => 'Guild API',
+        'provider' => 'users',
+    ]);
+    
     $user = User::factory()->create([
         'password' => 'password123',
     ]);
