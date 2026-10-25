@@ -7,7 +7,7 @@ use Laravel\Passport\Client;
 uses(RefreshDatabase::class);
 
 
-test('a user can log in with valid credentials', function () {
+test('a user can log in with valid credentials, password or hash are not returned', function () {
     Client::factory()
     ->asPersonalAccessTokenClient()
     ->create([
@@ -29,7 +29,9 @@ test('a user can log in with valid credentials', function () {
             'access_token',
             'token_type',
         ])
-        ->assertJsonPath('token_type', 'Bearer');
+        ->assertJsonPath('token_type', 'Bearer')
+        ->assertJsonMissingPath('password')
+        ->assertJsonMissingPath('password_hash');
 });
 
 test('a user cannot log in with incorrect password', function () {
@@ -110,3 +112,34 @@ test('a user cannot log in with malformed email and it request is not processed'
     $response->assertUnprocessable();
 
 });
+
+
+test('a user can access a protected endpoint with their token', function () {
+    $user = User::factory()->create([
+        'password' => 'password123',
+    ]);
+
+    Client::factory()
+        ->asPersonalAccessTokenClient()
+        ->create([
+            'name' => 'Guild API',
+            'provider' => 'users',
+        ]);
+
+    $loginResponse = $this->postJson('/api/login', [
+        'email' => $user->email,
+        'password' => 'password123',
+    ]);
+
+    $loginResponse->assertOk();
+
+    $token = $loginResponse->json('access_token');
+
+    $response = $this->withToken($token)->getJson('/api/user');
+
+    $response->assertOk()
+        ->assertJsonPath('id', $user->id)
+        ->assertJsonPath('email', $user->email);
+});
+
+
