@@ -51,3 +51,40 @@ test('an unauthenticated user cannot log out', function () {
 
     $response->assertUnauthorized();
 });
+
+
+test('logging out revokes only the current token', function () {
+    Client::factory()
+        ->asPersonalAccessTokenClient()
+        ->create([
+            'name' => 'Guild API',
+            'provider' => 'users',
+        ]);
+
+    $user = User::factory()->create([
+        'password' => 'password123',
+    ]);
+
+    $firstToken = $user->createToken('First device')->accessToken;
+    $secondToken = $user->createToken('Second device')->accessToken;
+
+    $logoutResponse = $this->withToken($firstToken)
+        ->postJson('/api/logout');
+
+    $logoutResponse->assertOk();
+
+    Auth::forgetGuards();
+
+    $firstResponse = $this->withToken($firstToken)
+        ->getJson('/api/user');
+
+    $firstResponse->assertUnauthorized();
+
+    Auth::forgetGuards();
+
+    $secondResponse = $this->withToken($secondToken)
+        ->getJson('/api/user');
+
+    $secondResponse->assertOk()
+        ->assertJsonPath('id', $user->id);
+});
