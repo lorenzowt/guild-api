@@ -6,10 +6,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('authenticated receives a paginated list of their heroes', function ($perPage) {
+test('authenticated user receives a paginated list of their heroes', function ($perPage) {
     $user = User::factory()->create();
 
-    Hero::factory(5)->create([
+    Hero::factory(10)->create([
         'user_id' => $user->id,
     ]);
 
@@ -17,7 +17,10 @@ test('authenticated receives a paginated list of their heroes', function ($perPa
         ->getJson("/api/heroes?per_page={$perPage}");
 
     $response->assertStatus(200)
-        ->assertJsonCount($perPage ?? 10, 'data')
+        ->assertJsonCount(
+            $perPage === null || $perPage === '' ? 10 : $perPage, 
+            'data'
+        )
         ->assertJsonStructure([
             'data' => [
                 '*' => [
@@ -38,4 +41,38 @@ test('authenticated receives a paginated list of their heroes', function ($perPa
     'five heroes per page' => 5,
     'null uses the default' => null,
     'empty uses the default' => '',
+]);
+
+test('authenticated user cannot retrieve heroes', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user, 'api')
+        ->getJson("/api/heroes");
+
+    $response->assertOk()
+            ->assertJsonCount(0, 'data')
+            ->assertJsonPath('meta.total', 0)
+            ->assertJsonPath('message', 'Heroes retrieved successfully.');
+});
+
+test('unauthenticated user cannot retrieve information', function () {
+
+    $response = $this->getJson('/api/heroes');
+
+    $response->assertUnauthorized();
+});
+
+test('invalid per_page values are rejected', function($perPage) {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user, 'api')
+        ->getJson("/api/heroes?per_page={$perPage}");
+    
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors('per_page');
+})->with([
+    'above maximum' => 101,
+    'zero' => 0,
+    'bellow minimum' => -1,
+    'non-numeric value' => 'abc',
 ]);
