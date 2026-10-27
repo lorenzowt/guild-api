@@ -19,9 +19,11 @@ class StoreHeroRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'name' => preg_replace('/\s+/', ' ', trim($this->name)),
-        ]);
+        if (is_string($this->name)) {
+            $this->merge([
+                'name' => preg_replace('/\s+/', ' ', trim($this->name)),
+            ]);
+        }
     }
 
     /**
