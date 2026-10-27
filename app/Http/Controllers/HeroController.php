@@ -13,9 +13,18 @@ class HeroController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        
+        $perPage = $request->integer('per_page', 10);
+
+        $heroes = $request->user()
+            ->heroes()
+            ->paginate($perPage);
+
+        return HeroResource::collection($heroes)
+            ->additional([
+                'message' => 'Heroes retrieved successfully.'
+            ]);
     }
 
     /**
