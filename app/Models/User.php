@@ -12,6 +12,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 use App\Enums\UserRole;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Hero;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -19,6 +21,11 @@ class User extends Authenticatable implements OAuthenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
+
+    public function heroes(): HasMany
+    {
+        return $this->hasMany(Hero::class);
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -33,4 +40,5 @@ class User extends Authenticatable implements OAuthenticatable
             'role' => UserRole::class,
         ];
     }
+
 }
