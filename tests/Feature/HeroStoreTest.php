@@ -19,15 +19,20 @@ test('authenticated user can create a new hero', function () {
 
     $response->assertCreated();
 
-    $response->assertJson([
-        'data' => [
-            'name' => 'Hero Example',
-            'hero_class' => 'cleric',
-            'level' => 1,
-            'status' => 'available',
-        ],
-        'message' => 'Hero created successfully.'
-    ]);
+    $response->assertStatus(201)
+        ->assertJson([
+            'data' => [
+                'name' => 'Hero Example',
+                'hero_class' => 'cleric',
+                'level' => 1,
+                'status' => 'available',
+            ],
+            'message' => 'Hero created successfully.'
+        ])
+        ->assertJsonStructure([
+            'data' => ['id','name','hero_class','level','status','created_at','updated_at'],
+            'message',
+        ]);
 
     $this->assertDatabaseHas('heroes', [
         'name' => 'Hero Example',
