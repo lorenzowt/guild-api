@@ -22,6 +22,7 @@ class HeroResource extends JsonResource
             'status' => $this->status,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
+            'user_id' => $this->user_id,
         ];
     }
 }
