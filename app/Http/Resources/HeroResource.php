@@ -20,6 +20,9 @@ class HeroResource extends JsonResource
             'hero_class' => $this->hero_class,
             'level' => $this->level,
             'status' => $this->status,
+            'created_at' => $this->created_at?->toIso8601String(),
+            'updated_at' => $this->updated_at?->toIso8601String(),
+            'user_id' => $this->user_id,
         ];
     }
 }

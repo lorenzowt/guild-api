@@ -7,15 +7,26 @@ use App\Enums\HeroClass;
 use App\Models\Hero;
 use App\Http\Requests\StoreHeroRequest;
 use App\Http\Resources\HeroResource;
+use App\Http\Requests\IndexHeroRequest;
+
 
 class HeroController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexHeroRequest $request)
     {
-        
+        $perPage = $request->validated()['per_page'] ?? 10;
+
+        $heroes = $request->user()
+            ->heroes()
+            ->paginate($perPage);
+
+        return HeroResource::collection($heroes)
+            ->additional([
+                'message' => 'Heroes retrieved successfully.'
+            ]);
     }
 
     /**

@@ -47,7 +47,7 @@ test('a user cannot log in with incorrect password', function () {
 
     $response->assertUnauthorized()
         ->assertJson([
-            'message' => 'Invalid credentials'
+            'message' => 'Invalid credentials.'
         ]);
 
 });
@@ -65,7 +65,7 @@ test('a user cannot log in with incorrect email', function () {
 
     $response->assertUnauthorized()
         ->assertJson([
-            'message' => 'Invalid credentials'
+            'message' => 'Invalid credentials.'
         ]);
 
 });
