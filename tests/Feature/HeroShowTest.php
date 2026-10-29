@@ -31,3 +31,30 @@ test('authenticated user receive information on one of their heroes', function (
                 'message',
             ]);
 });
+
+test('authenticated user cannot receive information from a hero they do not own', function () {
+    $user = User::factory()->create();
+
+    $anotherUser = User::factory()->create();
+
+    $hero = Hero::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->actingAs($anotherUser, 'api')
+        ->getJson("/api/heroes/$hero->id");
+
+    $response->assertNotFound();
+});
+
+test('unauthenticated user cannot receive information from hero', function () {
+    $user = User::factory()->create();
+
+    $hero = Hero::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->getJson("/api/heroes/$hero->id");
+
+    $response->assertUnauthorized();
+});
