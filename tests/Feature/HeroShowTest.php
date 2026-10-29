@@ -30,4 +30,4 @@ test('authenticated user receive information on one of their heroes', function (
                 'data' => ['id','name','hero_class','level','status','created_at','updated_at'],
                 'message',
             ]);
-]);
+});

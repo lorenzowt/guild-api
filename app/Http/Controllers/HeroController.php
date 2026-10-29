@@ -57,9 +57,14 @@ class HeroController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        //
+        $hero = $request->user()->heroes()->findOrFail($id);
+
+        return (new HeroResource($hero))
+            ->additional([
+                'message' => 'Hero retrieved successfully.'
+            ]);
     }
 
     /**
