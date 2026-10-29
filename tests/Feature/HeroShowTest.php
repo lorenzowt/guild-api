@@ -20,9 +20,9 @@ test('authenticated user receive information on one of their heroes', function (
         ->assertJson([
                 'data' => [
                     'name' => $hero->name,
-                    'hero_class' => $hero->hero_class,
+                    'hero_class' => $hero->hero_class->value,
                     'level' => $hero->level,
-                    'status' => $hero->status,
+                    'status' => $hero->status->value,
                 ],
                 'message' => 'Hero retrieved successfully.'
             ])
