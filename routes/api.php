@@ -21,6 +21,8 @@ Route::get('/heroes', [HeroController::class, 'index'])->middleware('auth:api');
 
 Route::get('/heroes/{hero}', [HeroController::class, 'show'])->middleware('auth:api');
 
+Route::patch('/heroes/{hero}', [HeroController::class, 'edit'])->middleware('auth:api');
+
 // Route::middleware('auth:api')->group(function () {
 //     Route::get('/user', function (Request $request) {
 //         return $request->user();
