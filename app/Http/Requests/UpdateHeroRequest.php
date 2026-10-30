@@ -6,6 +6,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Enums\HeroClass;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class UpdateHeroRequest extends FormRequest
 {
@@ -36,6 +37,23 @@ class UpdateHeroRequest extends FormRequest
         return [
             'name' => ['sometimes', 'string', 'max:45',],
             'hero_class' => ['required', Rule::enum(HeroClass::class),],
+        ];
+    }
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator) {
+                if (
+                    !$this->has('name') &&
+                    !$this->has('hero_class') 
+                ) {
+                    $validator->error()->add(
+                        'request',
+                        'At least one field must be provided',
+                    );
+                }
+            },
         ];
     }
 }
