@@ -8,7 +8,9 @@ use App\Models\Hero;
 use App\Http\Requests\StoreHeroRequest;
 use App\Http\Resources\HeroResource;
 use App\Http\Requests\IndexHeroRequest;
+use App\Http\Requests\UpdateHeroRequest;
 
+use function PHPUnit\Framework\isEmpty;
 
 class HeroController extends Controller
 {
@@ -70,17 +72,26 @@ class HeroController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Request $request, string $id)
     {
-        //
+
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateHeroRequest $request, string $id)
     {
-        //
+        $hero = $request->user()->heroes()->findOrFail($id);
+
+        $data = $request->validated();
+
+        $hero->update($data);
+        
+        return (new HeroResource($hero))
+            ->additional([
+                'message' => 'Hero updated successfully.'
+            ]);
     }
 
     /**
