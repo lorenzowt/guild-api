@@ -48,7 +48,7 @@ class UpdateHeroRequest extends FormRequest
                     !$this->has('name') &&
                     !$this->has('hero_class') 
                 ) {
-                    $validator->error()->add(
+                    $validator->errors()->add(
                         'request',
                         'At least one field must be provided',
                     );
