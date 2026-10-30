@@ -36,7 +36,7 @@ class UpdateHeroRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:45',],
-            'hero_class' => ['required', Rule::enum(HeroClass::class),],
+            'hero_class' => ['sometimes', Rule::enum(HeroClass::class),],
         ];
     }
 

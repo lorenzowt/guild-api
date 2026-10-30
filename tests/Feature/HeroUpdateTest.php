@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('authenticated user can edit a field of their hero', function ($updateInfo) {
+test('authenticated user can update fillable a field of their hero', function ($updateData) {
     $user = User::factory()->create();
 
     $hero = Hero::factory()->create([
@@ -14,18 +14,24 @@ test('authenticated user can edit a field of their hero', function ($updateInfo)
     ]);
 
     $response = $this->actingAs($user, 'api')
-        ->patchJson("/api/heroes/$hero->id", $updateInfo);
+        ->patchJson("/api/heroes/$hero->id", $updateData);
 
     $response->assertStatus(200)    
         ->assertJson([
-                'data' => $updateInfo,
-                'message' => 'Hero retrieved successfully.'
+                'data' => $updateData,
+                'message' => 'Hero updated successfully.'
             ])
             ->assertJsonStructure([
                 'data' => ['id','name','hero_class','level','status','created_at','updated_at'],
                 'message',
             ]);
+
+    $this->assertDatabaseHas('heroes', [
+        ...$updateData,
+        'id' => $hero->id,
+    ]);
+
 })->with([
-    ['name' => 'Example'],
-    ['hero_class' => 'warrior'],
+    'update name' => [['name' => 'Example']],
+    'update class' => [['hero_class' => 'warrior']],
 ]);
