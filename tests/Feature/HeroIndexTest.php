@@ -3,10 +3,11 @@
 use App\Models\Hero;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Enums\HeroStatus;
 
 uses(RefreshDatabase::class);
 
-test('authenticated user receives a paginated list of only their heroes', function ($perPage) {
+test('authenticated user receives a paginated list of the heroes they own', function ($perPage) {
     $user = User::factory()->create();
 
     Hero::factory(10)->create([
@@ -91,3 +92,29 @@ test('invalid per_page values are rejected', function($perPage) {
     'bellow minimum' => -1,
     'non-numeric value' => 'abc',
 ]);
+
+test('authenticated user do not receive deactivated heroes', function() {
+    $user = User::factory()->create();
+
+    $activeHero = Hero::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $deactivatedHero = Hero::factory()->create([
+        'user_id' => $user->id,
+        'status' => HeroStatus::Deactivated,
+    ]);
+
+    $this->assertDatabaseHas('heroes', [
+        'id' => $deactivatedHero->id,
+        'status' => HeroStatus::Deactivated->value,
+    ]);
+
+    $response = $this->actingAs($user, 'api')
+        ->getJson("/api/heroes");
+
+    $response->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('message', 'Heroes retrieved successfully.')
+        ->assertJsonPath('data.0.id', $activeHero->id);
+});
