@@ -3,6 +3,7 @@
 use App\Models\Hero;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Enums\HeroStatus;
 
 uses(RefreshDatabase::class);
 
@@ -108,6 +109,27 @@ test('unauthenticated user cannot update a hero', function () {
 
     $response->assertUnauthorized();
 
+});
+
+test('authenticated user cannot update deactivated hero', function() {
+    $user = User::factory()->create();
+
+    $hero = Hero::factory()->create([
+        'user_id' => $user->id,
+        'status' => HeroStatus::Deactivated,
+    ]);
+
+    $this->assertDatabaseHas('heroes', [
+        'id' => $hero->id,
+        'status' => HeroStatus::Deactivated->value,
+    ]);
+
+    $response = $this->actingAs($user, 'api')
+        ->patchJson("/api/heroes/$hero->id", [
+            'name' => 'Example Name',
+        ]);
+
+    $response->assertNotFound();
 });
 
 
