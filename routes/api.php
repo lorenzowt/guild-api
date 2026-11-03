@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HeroController;
+use App\Http\Controllers\QuestController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -26,6 +27,8 @@ Route::patch('/heroes/{hero}', [HeroController::class, 'update'])->middleware('a
 Route::delete('/heroes/{hero}', [HeroController::class, 'destroy'])->middleware('auth:api');
 
 Route::post('/heroes/{hero}/heal', [HeroController::class, 'heal'])->middleware('auth:api');
+
+Route::get('/quests', [QuestController::class, 'index'])->middleware('auth:api');
 // Route::middleware('auth:api')->group(function () {
 //     Route::get('/user', function (Request $request) {
 //         return $request->user();

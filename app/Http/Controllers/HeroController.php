@@ -7,7 +7,7 @@ use App\Enums\HeroClass;
 use App\Models\Hero;
 use App\Http\Requests\StoreHeroRequest;
 use App\Http\Resources\HeroResource;
-use App\Http\Requests\IndexHeroRequest;
+use App\Http\Requests\IndexResourceRequest;
 use App\Http\Requests\UpdateHeroRequest;
 use App\Enums\HeroStatus;
 
@@ -16,7 +16,7 @@ use function PHPUnit\Framework\isEmpty;
 class HeroController extends Controller
 {
 
-    public function index(IndexHeroRequest $request)
+    public function index(IndexResourceRequest $request)
     {
         $perPage = $request->validated()['per_page'] ?? 10;
 

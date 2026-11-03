@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class IndexHeroRequest extends FormRequest
+class IndexResourceRequest extends FormRequest
 {
     public function authorize(): bool
     {
