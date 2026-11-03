@@ -25,6 +25,7 @@ Route::patch('/heroes/{hero}', [HeroController::class, 'update'])->middleware('a
 
 Route::delete('/heroes/{hero}', [HeroController::class, 'destroy'])->middleware('auth:api');
 
+Route::post('/heroes/{hero}/heal', [HeroController::class, 'heal'])->middleware('auth:api');
 // Route::middleware('auth:api')->group(function () {
 //     Route::get('/user', function (Request $request) {
 //         return $request->user();
