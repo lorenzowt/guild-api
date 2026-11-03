@@ -15,6 +15,9 @@ test('authenticated user receives a paginated list of the quests', function($per
         ->getJson("/api/quests?per_page={$perPage}");
     
     $response->assertStatus(200)
+        ->assertJson([
+            'message' => 'Quests retrieved successfully.',
+        ])
         ->assertJsonCount(
             $perPage === null || $perPage === '' ? 10 : $perPage,
             'data'
@@ -26,6 +29,7 @@ test('authenticated user receives a paginated list of the quests', function($per
                     'description',
                     'boss',
                     'difficulty',
+                    'is_active',
                     'created_at',
                     'updated_at',
                 ],
