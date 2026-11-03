@@ -25,6 +25,7 @@ test('authenticated user receives a paginated list of the quests', function($per
         ->assertJsonStructure([
             'data' => [
                 '*' => [
+                    'id',
                     'title',
                     'description',
                     'boss',
@@ -44,3 +45,60 @@ test('authenticated user receives a paginated list of the quests', function($per
     'null uses the default' => null,
     'empty uses the default' => '',
 ]);
+
+test('authenticated user can retrieve an empty quest list', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user, 'api')
+        ->getJson("/api/quests");
+
+    $response->assertOk()
+            ->assertJsonCount(0, 'data')
+            ->assertJsonPath('meta.total', 0)
+            ->assertJsonPath('message', 'Quests retrieved successfully.');
+});
+
+test('unauthenticated user cannot retrieve information', function () {
+
+    $response = $this->getJson('/api/quests');
+
+    $response->assertUnauthorized();
+});
+
+test('invalid per_page values are rejected', function($perPage) {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user, 'api')
+        ->getJson("/api/quests?per_page={$perPage}");
+    
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors('per_page');
+})->with([
+    'above maximum' => 101,
+    'zero' => 0,
+    'bellow minimum' => -1,
+    'non-numeric value' => 'abc',
+]);
+
+test('authenticated user do not receive deactivated heroes', function() {
+    $user = User::factory()->create();
+
+    $activeQuest = Quest::factory()->create();
+
+    $deactivatedQuest = Quest::factory()->create([
+        'is_active' => false,
+    ]);
+
+    $this->assertDatabaseHas('quests', [
+        'id' => $deactivatedQuest->id,
+        'is_active' => false,
+    ]);
+
+    $response = $this->actingAs($user, 'api')
+        ->getJson("/api/quests");
+
+    $response->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('message', 'Quests retrieved successfully.')
+        ->assertJsonPath('data.0.id', $activeQuest->id);
+});
