@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\HeroClass;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\User;
 use App\Enums\HeroStatus;
 use Illuminate\Database\Eloquent\Model;
@@ -27,12 +28,15 @@ class Hero extends Model
         'status' => HeroStatus::Available->value,
     ];
 
-    use HasFactory;
-
      
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeActive(Builder $query) 
+    {
+        $query->where('status', '!=', HeroStatus::Deactivated);
     }
 
     protected function casts(): array

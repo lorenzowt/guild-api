@@ -9,6 +9,7 @@ use App\Http\Requests\StoreHeroRequest;
 use App\Http\Resources\HeroResource;
 use App\Http\Requests\IndexHeroRequest;
 use App\Http\Requests\UpdateHeroRequest;
+use App\Enums\HeroStatus;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -23,6 +24,7 @@ class HeroController extends Controller
 
         $heroes = $request->user()
             ->heroes()
+            ->active()
             ->paginate($perPage);
 
         return HeroResource::collection($heroes)
@@ -61,7 +63,7 @@ class HeroController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        $hero = $request->user()->heroes()->findOrFail($id);
+        $hero = $request->user()->heroes()->active()->findOrFail($id);
 
         return (new HeroResource($hero))
             ->additional([
@@ -82,7 +84,7 @@ class HeroController extends Controller
      */
     public function update(UpdateHeroRequest $request, string $id)
     {
-        $hero = $request->user()->heroes()->findOrFail($id);
+        $hero = $request->user()->heroes()->active()->findOrFail($id);
 
         $data = $request->validated();
 
@@ -97,8 +99,16 @@ class HeroController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        $hero = $request->user()->heroes()->active()->findOrFail($id);
+
+        $hero->status = HeroStatus::Deactivated;
+        
+        $hero->save();
+
+        return response()->json([
+            'message' => 'Hero deleted successfully.'
+        ]);
     }
 }

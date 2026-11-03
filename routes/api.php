@@ -23,6 +23,8 @@ Route::get('/heroes/{hero}', [HeroController::class, 'show'])->middleware('auth:
 
 Route::patch('/heroes/{hero}', [HeroController::class, 'update'])->middleware('auth:api');
 
+Route::delete('/heroes/{hero}', [HeroController::class, 'destroy'])->middleware('auth:api');
+
 // Route::middleware('auth:api')->group(function () {
 //     Route::get('/user', function (Request $request) {
 //         return $request->user();

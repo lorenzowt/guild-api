@@ -3,6 +3,7 @@
 use App\Models\Hero;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Enums\HeroStatus;
 
 uses(RefreshDatabase::class);
 
@@ -57,4 +58,23 @@ test('unauthenticated user cannot receive information from hero', function () {
     $response = $this->getJson("/api/heroes/$hero->id");
 
     $response->assertUnauthorized();
+});
+
+test('authenticated user do not receive deactivated hero', function() {
+    $user = User::factory()->create();
+
+    $hero = Hero::factory()->create([
+        'user_id' => $user->id,
+        'status' => HeroStatus::Deactivated,
+    ]);
+
+    $this->assertDatabaseHas('heroes', [
+        'id' => $hero->id,
+        'status' => HeroStatus::Deactivated->value,
+    ]);
+
+    $response = $this->actingAs($user, 'api')
+        ->getJson("/api/heroes/$hero->id");
+
+    $response->assertNotFound();
 });
