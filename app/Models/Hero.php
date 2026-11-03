@@ -39,6 +39,11 @@ class Hero extends Model
         $query->where('status', '!=', HeroStatus::Deactivated);
     }
 
+    public function isInjured(): bool
+    {
+        return $this->status === HeroStatus::Injured;
+    }
+
     protected function casts(): array
     {
         return [
