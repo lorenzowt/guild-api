@@ -45,7 +45,7 @@ test('authenticated user cannot deactivate a deactivated hero', function () {
     $response = $this->actingAs($user, 'api')
         ->deleteJson("/api/heroes/$hero->id");
 
-    $response->assertUnauthorized();
+    $response->assertNotFound();
 
     $this->assertDatabaseHas('heroes', [
         'id' => $hero->id,
