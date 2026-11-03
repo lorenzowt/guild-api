@@ -27,6 +27,11 @@ class User extends Authenticatable implements OAuthenticatable
         return $this->hasMany(Hero::class);
     }
 
+    public function createdQuests(): HasMany
+    {
+        return $this->hasMany(Quest::class, 'created_by');
+    }
+
     /**
      * Get the attributes that should be cast.
      *
