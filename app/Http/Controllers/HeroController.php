@@ -15,9 +15,7 @@ use function PHPUnit\Framework\isEmpty;
 
 class HeroController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index(IndexHeroRequest $request)
     {
         $perPage = $request->validated()['per_page'] ?? 10;
@@ -33,17 +31,6 @@ class HeroController extends Controller
             ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreHeroRequest $request)
     {
         $hero = $request->user()
@@ -58,9 +45,6 @@ class HeroController extends Controller
             ->setStatusCode(201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Request $request, string $id)
     {
         $hero = $request->user()->heroes()->active()->findOrFail($id);
@@ -71,17 +55,6 @@ class HeroController extends Controller
             ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Request $request, string $id)
-    {
-
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateHeroRequest $request, string $id)
     {
         $hero = $request->user()->heroes()->active()->findOrFail($id);
@@ -96,9 +69,6 @@ class HeroController extends Controller
             ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Request $request, string $id)
     {
         $hero = $request->user()->heroes()->active()->findOrFail($id);
@@ -110,5 +80,25 @@ class HeroController extends Controller
         return response()->json([
             'message' => 'Hero deleted successfully.'
         ]);
+    }
+
+    public function heal(Request $request, string $id)
+    {
+        $hero = $request->user()->heroes()->active()->findOrFail($id);
+
+        if (!$hero->isInjured()) {
+            return response()->json([
+                'message' => "Hero isn't injured."
+            ], 409);
+        }
+
+        $hero->status = HeroStatus::Available;
+        
+        $hero->save();
+
+        return response()->json([
+            'message' => 'Hero healed successfully.'
+        ]);
+
     }
 }
