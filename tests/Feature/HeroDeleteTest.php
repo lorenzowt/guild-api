@@ -42,7 +42,8 @@ test('authenticated user cannot deactivate a deactivated hero', function () {
         'status' => HeroStatus::Deactivated->value,
     ]);
 
-    $response = $this->deleteJson("/api/heroes/$hero->id");
+    $response = $this->actingAs($user, 'api')
+        ->deleteJson("/api/heroes/$hero->id");
 
     $response->assertUnauthorized();
 
