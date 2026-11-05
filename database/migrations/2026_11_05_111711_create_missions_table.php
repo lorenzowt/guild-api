@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('quest_id')->constrained('quests');
             $table->string('status', 45)->default(MissionStatus::Assigned->value);
+            $table->dateTime('completed_at')->nullable();
             $table->timestamps();
         });
     }
