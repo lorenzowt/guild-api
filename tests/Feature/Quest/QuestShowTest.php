@@ -17,7 +17,7 @@ test('authenticated user receives active quest information', function () {
     $response->assertStatus(200)    
         ->assertJson([
                 'data' => [
-                    'title' => $quest->name,
+                    'title' => $quest->title,
                     'description' => $quest->description,
                     'boss' => $quest->boss,
                     'difficulty' => $quest->difficulty,
