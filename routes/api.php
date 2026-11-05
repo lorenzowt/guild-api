@@ -29,6 +29,8 @@ Route::delete('/heroes/{hero}', [HeroController::class, 'destroy'])->middleware(
 Route::post('/heroes/{hero}/heal', [HeroController::class, 'heal'])->middleware('auth:api');
 
 Route::get('/quests', [QuestController::class, 'index'])->middleware('auth:api');
+
+Route::get('/quests/{quest}', [QuestController::class, 'show'])->middleware('auth:api');
 // Route::middleware('auth:api')->group(function () {
 //     Route::get('/user', function (Request $request) {
 //         return $request->user();
