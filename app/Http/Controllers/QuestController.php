@@ -21,4 +21,14 @@ class QuestController extends Controller
             ]);
 
     }
+
+    public function show(Request $request, string $id)
+    {
+        $quest = Quest::active()->findOrFail($id);
+
+        return (new QuestResource($quest))
+            ->additional([
+                'message' => 'Quest retrieved successfully.'
+            ]);
+    }
 }
