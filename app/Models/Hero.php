@@ -5,8 +5,10 @@ namespace App\Models;
 use App\Enums\HeroClass;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\User;
+use App\Models\Mission;
 use App\Enums\HeroStatus;
 use Illuminate\Database\Eloquent\Model;
 use Database\Factories\HeroFactory;
@@ -32,6 +34,11 @@ class Hero extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function missions(): BelongsToMany
+    {
+        return $this->belongsToMany(Mission::class);
     }
 
     public function scopeActive(Builder $query) 

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\Mission;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Quest extends Model
 {
@@ -27,5 +29,10 @@ class Quest extends Model
     public function scopeActive(Builder $query): void 
     {
         $query->where('is_active', true);
+    }
+
+    public function missions(): HasMany
+    {
+        return $this->hasMany(Mission::class);
     }
 }

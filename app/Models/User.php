@@ -14,6 +14,7 @@ use Laravel\Passport\HasApiTokens;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Hero;
+use App\Models\Mission;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -30,6 +31,11 @@ class User extends Authenticatable implements OAuthenticatable
     public function createdQuests(): HasMany
     {
         return $this->hasMany(Quest::class, 'created_by');
+    }
+
+    public function missions(): HasMany
+    {
+        return $this->hasMany(Mission::class);
     }
 
     /**
