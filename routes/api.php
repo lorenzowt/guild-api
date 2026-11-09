@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HeroController;
 use App\Http\Controllers\QuestController;
+use App\Http\Controllers\MissionController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -31,6 +32,8 @@ Route::post('/heroes/{hero}/heal', [HeroController::class, 'heal'])->middleware(
 Route::get('/quests', [QuestController::class, 'index'])->middleware('auth:api');
 
 Route::get('/quests/{quest}', [QuestController::class, 'show'])->middleware('auth:api');
+
+Route::post('/missions', [MissionController::class, 'store'])->middleware('auth:api');
 // Route::middleware('auth:api')->group(function () {
 //     Route::get('/user', function (Request $request) {
 //         return $request->user();
