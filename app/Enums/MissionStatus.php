@@ -5,7 +5,7 @@ namespace App\Enums;
 enum MissionStatus: string
 {
     case Assigned = 'assigned';
-    case Success = 'successful';
+    case Success = 'success';
     case Failure = 'failure';
     case Canceled = 'canceled';
 
