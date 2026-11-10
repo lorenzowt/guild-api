@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Services\Missions;
+namespace App\Services\Mission;
 
 use App\Enums\MissionStatus;
 use App\Models\Mission;
 use Illuminate\Support\Facades\DB;
+use App\Services\Mission\MissionOutcomeCalculator;
 
 class CompleteMissionService
 {
