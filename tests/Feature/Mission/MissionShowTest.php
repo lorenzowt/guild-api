@@ -21,7 +21,7 @@ test('authenticated user can receive information about their mission', function 
         'user_id' => $user->id,
     ]);
 
-    $mission->heroes()->attach($heroes->pluck('id'));
+    $mission->heroes()->attach($heroes->pluck('id')->all());
 
     $response = $this->actingAs($user, 'api')
         ->getJson("/api/missions/{$mission->id}");
@@ -36,6 +36,7 @@ test('authenticated user can receive information about their mission', function 
                     'title' => $quest->title,
                 ],
             ],
+            'message' => 'Mission retrieved successfully.',
         ])
         ->assertJsonCount(2, 'data.heroes')
         ->assertJsonStructure([
@@ -55,6 +56,7 @@ test('authenticated user can receive information about their mission', function 
                 'completed_at',
                 'created_at',
             ],
+            'message',
         ]);
 });
 
