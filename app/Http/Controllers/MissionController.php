@@ -9,6 +9,7 @@ use App\Http\Requests\Mission\StoreMissionRequest;
 use App\Services\CreateMissionService;
 use App\Http\Resources\MissionResource;
 use App\Http\Requests\IndexResourceRequest;
+use App\Services\Missions\CompleteMissionService;
 
 
 class MissionController extends Controller
@@ -55,6 +56,29 @@ class MissionController extends Controller
         return (new MissionResource($mission))
             ->additional([
             'message' => 'Mission retrieved successfully.',
+            ]);
+    }
+
+    public function complete(
+        Request $request,
+        string $id,
+        CompleteMissionService $completeMissionService
+    ) {
+        $mission = $request->user()
+            ->missions()
+            ->findOrFail($id);
+
+        $mission = $completeMissionService->complete($mission);
+
+        if ($mission === null) {
+            return response()->json([
+                'message' => 'Only assigned missions can be completed.',
+            ], 409);
+        }
+
+        return (new MissionResource($mission))
+            ->additional([
+                'message' => 'Mission completed successfully.',
             ]);
     }
 
