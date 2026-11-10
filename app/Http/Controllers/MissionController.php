@@ -8,13 +8,24 @@ use App\Models\User;
 use App\Http\Requests\Mission\StoreMissionRequest;
 use App\Services\CreateMissionService;
 use App\Http\Resources\MissionResource;
+use App\Http\Requests\IndexResourceRequest;
 
 
 class MissionController extends Controller
 {
-    public function index()
+    public function index(IndexResourceRequest $request)
     {
-        //
+        $perPage = $request->validated()['per_page'] ?? 10;
+
+        $missions = $request->user()
+            ->missions()
+            ->with(['quest', 'heroes'])
+            ->paginate($perPage);
+
+        return MissionResource::collection($missions)
+            ->additional([
+                'message' => 'Missions retrieved successfully.',
+            ]);
     }
 
     public function store(
