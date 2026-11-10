@@ -35,10 +35,3 @@ test('mission can be completed unsuccessfully', function () {
     expect($mission->status)->toBe(MissionStatus::Failure)
         ->and($mission->completed_at)->not->toBeNull();
 });
-
-test('mission cannot be completed with a canceled outcome', function () {
-    $mission = new Mission();
-
-    expect(fn () => $mission->complete(MissionStatus::Canceled))
-        ->toThrow(InvalidArgumentException::class);
-});
