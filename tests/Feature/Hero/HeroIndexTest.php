@@ -1,4 +1,5 @@
 <?php
+namespace Tests\Feature\Hero;
 
 use App\Models\Hero;
 use App\Models\User;
