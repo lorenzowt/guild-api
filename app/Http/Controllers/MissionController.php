@@ -34,9 +34,17 @@ class MissionController extends Controller
         
     }
 
-    public function show(Mission $mission)
+    public function show(Request $request, string $id)
     {
-        //
+        $mission = $request->user()
+            ->missions()
+            ->with(['quest', 'heroes'])
+            ->findOrFail($id);
+
+        return (new MissionResource($mission))
+            ->additional([
+            'message' => 'Mission retrieved successfully.',
+            ]);
     }
 
     public function update(Request $request, Mission $mission)
