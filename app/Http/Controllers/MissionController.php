@@ -6,10 +6,10 @@ use App\Models\Mission;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Http\Requests\Mission\StoreMissionRequest;
-use App\Services\CreateMissionService;
+use App\Services\Mission\CreateMissionService;
 use App\Http\Resources\MissionResource;
 use App\Http\Requests\IndexResourceRequest;
-use App\Services\Missions\CompleteMissionService;
+use App\Services\Mission\CompleteMissionService;
 
 
 class MissionController extends Controller
