@@ -2,11 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Enums\MissionStatus;
-use App\Models\Hero;
-use App\Models\Quest;
-use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -42,5 +39,16 @@ class Mission extends Model
     public function quest(): BelongsTo
     {
         return $this->BelongsTo(Quest::class);
+    }
+
+    public function isAssigned(): bool
+    {
+        return $this->status === MissionStatus::Assigned;
+    }
+
+    public function complete(MissionStatus $outcome): void
+    {
+        $this->status = $outcome;
+        $this->completed_at = now();
     }
 }
