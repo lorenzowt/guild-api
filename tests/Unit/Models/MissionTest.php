@@ -2,8 +2,9 @@
 
 use App\Enums\MissionStatus;
 use App\Models\Mission;
-use InvalidArgumentException;
+use Tests\TestCase;
 
+uses(TestCase::class);
 test('new mission is assigned', function () {
     $mission = new Mission();
 
