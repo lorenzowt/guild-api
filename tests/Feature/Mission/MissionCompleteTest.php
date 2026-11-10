@@ -10,51 +10,35 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-function createAssignedMissionForCompletionTest(
-    User $user,
-    int $difficulty,
-    array $heroAttributes
-): array {
+test('authenticated user can successfully complete a mission', function () {
+    $user = User::factory()->create();
+
     $quest = Quest::factory()->create([
-        'difficulty' => $difficulty,
+        'difficulty' => 5,
     ]);
 
     $mission = $user->missions()->create([
         'quest_id' => $quest->id,
     ]);
 
-    $heroes = collect($heroAttributes)
-        ->map(function (array $attributes) use ($user) {
-            return Hero::factory()->create(array_merge([
-                'user_id' => $user->id,
-                'hero_class' => HeroClass::Warrior,
-                'level' => 1,
-                'status' => HeroStatus::OnMission,
-            ], $attributes));
-        });
+    $warrior = Hero::factory()->create([
+        'user_id' => $user->id,
+        'hero_class' => HeroClass::Warrior,
+        'level' => 3,
+        'status' => HeroStatus::OnMission,
+    ]);
 
-    $mission->heroes()->attach($heroes->pluck('id')->all());
+    $mage = Hero::factory()->create([
+        'user_id' => $user->id,
+        'hero_class' => HeroClass::Mage,
+        'level' => 2,
+        'status' => HeroStatus::OnMission,
+    ]);
 
-    return [$mission, $heroes];
-}
-
-test('authenticated user can successfully complete a mission', function () {
-    $user = User::factory()->create();
-
-    [$mission, $heroes] = createAssignedMissionForCompletionTest(
-        user: $user,
-        difficulty: 5,
-        heroAttributes: [
-            [
-                'hero_class' => HeroClass::Warrior,
-                'level' => 3,
-            ],
-            [
-                'hero_class' => HeroClass::Mage,
-                'level' => 2,
-            ],
-        ],
-    );
+    $mission->heroes()->attach([
+        $warrior->id,
+        $mage->id,
+    ]);
 
     $response = $this->actingAs($user, 'api')
         ->postJson("/api/missions/{$mission->id}/complete");
@@ -74,13 +58,13 @@ test('authenticated user can successfully complete a mission', function () {
     expect($mission->fresh()->completed_at)->not->toBeNull();
 
     $this->assertDatabaseHas('heroes', [
-        'id' => $heroes[0]->id,
+        'id' => $warrior->id,
         'level' => 4,
         'status' => HeroStatus::Available->value,
     ]);
 
     $this->assertDatabaseHas('heroes', [
-        'id' => $heroes[1]->id,
+        'id' => $mage->id,
         'level' => 3,
         'status' => HeroStatus::Available->value,
     ]);
@@ -89,20 +73,32 @@ test('authenticated user can successfully complete a mission', function () {
 test('authenticated user completes a mission unsuccessfully when party level equals quest difficulty', function () {
     $user = User::factory()->create();
 
-    [$mission, $heroes] = createAssignedMissionForCompletionTest(
-        user: $user,
-        difficulty: 3,
-        heroAttributes: [
-            [
-                'hero_class' => HeroClass::Warrior,
-                'level' => 2,
-            ],
-            [
-                'hero_class' => HeroClass::Warrior,
-                'level' => 1,
-            ],
-        ],
-    );
+    $quest = Quest::factory()->create([
+        'difficulty' => 3,
+    ]);
+
+    $mission = $user->missions()->create([
+        'quest_id' => $quest->id,
+    ]);
+
+    $firstWarrior = Hero::factory()->create([
+        'user_id' => $user->id,
+        'hero_class' => HeroClass::Warrior,
+        'level' => 2,
+        'status' => HeroStatus::OnMission,
+    ]);
+
+    $secondWarrior = Hero::factory()->create([
+        'user_id' => $user->id,
+        'hero_class' => HeroClass::Warrior,
+        'level' => 1,
+        'status' => HeroStatus::OnMission,
+    ]);
+
+    $mission->heroes()->attach([
+        $firstWarrior->id,
+        $secondWarrior->id,
+    ]);
 
     $response = $this->actingAs($user, 'api')
         ->postJson("/api/missions/{$mission->id}/complete");
@@ -122,13 +118,13 @@ test('authenticated user completes a mission unsuccessfully when party level equ
     expect($mission->fresh()->completed_at)->not->toBeNull();
 
     $this->assertDatabaseHas('heroes', [
-        'id' => $heroes[0]->id,
+        'id' => $firstWarrior->id,
         'level' => 1,
         'status' => HeroStatus::Injured->value,
     ]);
 
     $this->assertDatabaseHas('heroes', [
-        'id' => $heroes[1]->id,
+        'id' => $secondWarrior->id,
         'level' => 1,
         'status' => HeroStatus::Injured->value,
     ]);
@@ -139,13 +135,13 @@ test('authenticated user cannot complete another users mission', function () {
 
     $user = User::factory()->create();
 
-    [$mission] = createAssignedMissionForCompletionTest(
-        user: $missionOwner,
-        difficulty: 1,
-        heroAttributes: [
-            ['level' => 2],
-        ],
-    );
+    $quest = Quest::factory()->create([
+        'difficulty' => 1,
+    ]);
+
+    $mission = $missionOwner->missions()->create([
+        'quest_id' => $quest->id,
+    ]);
 
     $response = $this->actingAs($user, 'api')
         ->postJson("/api/missions/{$mission->id}/complete");
@@ -162,13 +158,13 @@ test('authenticated user cannot complete another users mission', function () {
 test('unauthenticated user cannot complete a mission', function () {
     $user = User::factory()->create();
 
-    [$mission] = createAssignedMissionForCompletionTest(
-        user: $user,
-        difficulty: 1,
-        heroAttributes: [
-            ['level' => 2],
-        ],
-    );
+    $quest = Quest::factory()->create([
+        'difficulty' => 1,
+    ]);
+
+    $mission = $user->missions()->create([
+        'quest_id' => $quest->id,
+    ]);
 
     $response = $this->postJson("/api/missions/{$mission->id}/complete");
 
@@ -181,21 +177,28 @@ test('unauthenticated user cannot complete a mission', function () {
     ]);
 });
 
-test('authenticated user cannot complete a mission that is not assigned', function (
-    MissionStatus $status
-) {
+test('authenticated user cannot complete a mission that is already completed', function () {
     $user = User::factory()->create();
 
-    [$mission, $heroes] = createAssignedMissionForCompletionTest(
-        user: $user,
-        difficulty: 1,
-        heroAttributes: [
-            ['level' => 4],
-        ],
-    );
+    $quest = Quest::factory()->create([
+        'difficulty' => 1,
+    ]);
+
+    $mission = $user->missions()->create([
+        'quest_id' => $quest->id,
+    ]);
+
+    $hero = Hero::factory()->create([
+        'user_id' => $user->id,
+        'hero_class' => HeroClass::Warrior,
+        'level' => 4,
+        'status' => HeroStatus::OnMission,
+    ]);
+
+    $mission->heroes()->attach($hero->id);
 
     $mission->forceFill([
-        'status' => $status,
+        'status' => MissionStatus::Success,
         'completed_at' => now(),
     ])->save();
 
@@ -206,16 +209,39 @@ test('authenticated user cannot complete a mission that is not assigned', functi
 
     $this->assertDatabaseHas('missions', [
         'id' => $mission->id,
-        'status' => $status->value,
+        'status' => MissionStatus::Success->value,
     ]);
 
     $this->assertDatabaseHas('heroes', [
-        'id' => $heroes[0]->id,
+        'id' => $hero->id,
         'level' => 4,
         'status' => HeroStatus::OnMission->value,
     ]);
-})->with([
-    'successful mission' => [MissionStatus::Success],
-    'failed mission' => [MissionStatus::Failure],
-    'canceled mission' => [MissionStatus::Canceled],
-]);
+});
+
+test('authenticated user cannot complete a canceled mission', function () {
+    $user = User::factory()->create();
+
+    $quest = Quest::factory()->create([
+        'difficulty' => 1,
+    ]);
+
+    $mission = $user->missions()->create([
+        'quest_id' => $quest->id,
+    ]);
+
+    $mission->forceFill([
+        'status' => MissionStatus::Canceled,
+    ])->save();
+
+    $response = $this->actingAs($user, 'api')
+        ->postJson("/api/missions/{$mission->id}/complete");
+
+    $response->assertConflict();
+
+    $this->assertDatabaseHas('missions', [
+        'id' => $mission->id,
+        'status' => MissionStatus::Canceled->value,
+        'completed_at' => null,
+    ]);
+});
