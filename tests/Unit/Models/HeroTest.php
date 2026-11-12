@@ -62,3 +62,11 @@ test('hero can become injured', function () {
 
     expect($hero->status)->toBe(HeroStatus::Injured);
 });
+
+test('hero can be deactivated', function () {
+    $hero = new Hero();
+
+    $hero->deactivate();
+
+    expect($hero->status)->toBe(HeroStatus::Deactivated);
+});

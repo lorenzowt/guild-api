@@ -82,6 +82,11 @@ class Hero extends Model
         $this->status = HeroStatus::Injured;
     }
 
+    public function deactivate(): void
+    {
+        $this->status = HeroStatus::Deactivated;
+    }
+
     protected function casts(): array
     {
         return [
