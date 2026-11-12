@@ -5,6 +5,7 @@ use App\Models\Hero;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Enums\HeroStatus;
+use App\Enums\UserRole;
 
 uses(RefreshDatabase::class);
 
@@ -79,3 +80,37 @@ test('authenticated user do not receive deactivated hero', function() {
 
     $response->assertNotFound();
 });
+
+test('admin can receive information about any hero including deactivated heroes', function (
+    HeroStatus $status
+) {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin,
+    ]);
+
+    $heroOwner = User::factory()->create();
+
+    $hero = Hero::factory()->create([
+        'user_id' => $heroOwner->id,
+        'status' => $status,
+    ]);
+
+    $response = $this->actingAs($admin, 'api')
+        ->getJson("/api/heroes/{$hero->id}");
+
+    $response->assertOk()
+        ->assertJson([
+            'data' => [
+                'id' => $hero->id,
+                'name' => $hero->name,
+                'hero_class' => $hero->hero_class->value,
+                'level' => $hero->level,
+                'status' => $status->value,
+                'user_id' => $heroOwner->id,
+            ],
+            'message' => 'Hero retrieved successfully.',
+        ]);
+})->with([
+    'active hero' => [HeroStatus::Available],
+    'deactivated hero' => [HeroStatus::Deactivated],
+]);
