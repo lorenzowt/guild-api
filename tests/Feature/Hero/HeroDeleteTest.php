@@ -5,6 +5,7 @@ use App\Models\Hero;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Enums\HeroStatus;
+use App\Enums\UserRole;
 
 uses(RefreshDatabase::class);
 
@@ -90,3 +91,35 @@ test('authenticated user cannot deactivate hero they do not own', function () {
         'status' => HeroStatus::Available->value,
     ]);
 });
+
+test('admin can deactivate any hero including deactivated heroes', function (
+    HeroStatus $status
+) {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin,
+    ]);
+
+    $heroOwner = User::factory()->create();
+
+    $hero = Hero::factory()->create([
+        'user_id' => $heroOwner->id,
+        'status' => $status,
+    ]);
+
+    $response = $this->actingAs($admin, 'api')
+        ->deleteJson("/api/heroes/{$hero->id}");
+
+    $response->assertOk()
+        ->assertJson([
+            'message' => 'Hero deleted successfully.',
+        ]);
+
+    $this->assertDatabaseHas('heroes', [
+        'id' => $hero->id,
+        'user_id' => $heroOwner->id,
+        'status' => HeroStatus::Deactivated->value,
+    ]);
+})->with([
+    'another users active hero' => [HeroStatus::Available],
+    'another users deactivated hero' => [HeroStatus::Deactivated],
+]);
