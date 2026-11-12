@@ -5,6 +5,7 @@ use App\Models\Hero;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Enums\HeroStatus;
+use App\Enums\UserRole;
 
 uses(RefreshDatabase::class);
 
@@ -110,5 +111,32 @@ test('unauthenticated user cannot heal their hero', function () {
     $this->assertDatabaseHas('heroes', [
         'id' => $hero->id,
         'status' => HeroStatus::Injured->value,
+    ]);
+});
+
+test('admin can heal an injured hero owned by another user', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin,
+    ]);
+
+    $heroOwner = User::factory()->create();
+
+    $hero = Hero::factory()->create([
+        'user_id' => $heroOwner->id,
+        'status' => HeroStatus::Injured,
+    ]);
+
+    $response = $this->actingAs($admin, 'api')
+        ->postJson("/api/heroes/{$hero->id}/heal");
+
+    $response->assertOk()
+        ->assertJson([
+            'message' => 'Hero healed successfully.',
+        ]);
+
+    $this->assertDatabaseHas('heroes', [
+        'id' => $hero->id,
+        'user_id' => $heroOwner->id,
+        'status' => HeroStatus::Available->value,
     ]);
 });
