@@ -67,16 +67,15 @@ class HeroController extends Controller
             ]);
     }
 
-    public function destroy(Request $request, string $id)
+    public function destroy(Hero $hero)
     {
-        $hero = $request->user()->heroes()->active()->findOrFail($id);
+        Gate::authorize('delete', $hero);
 
-        $hero->status = HeroStatus::Deactivated;
-        
+        $hero->deactivate();
         $hero->save();
 
         return response()->json([
-            'message' => 'Hero deleted successfully.'
+            'message' => 'Hero deleted successfully.',
         ]);
     }
 
