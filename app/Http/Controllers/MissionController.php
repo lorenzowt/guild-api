@@ -10,6 +10,7 @@ use App\Services\Mission\CreateMissionService;
 use App\Http\Resources\MissionResource;
 use App\Http\Requests\IndexResourceRequest;
 use App\Services\Mission\CompleteMissionService;
+use App\Services\Mission\CancelMissionService;
 
 
 class MissionController extends Controller
@@ -79,6 +80,29 @@ class MissionController extends Controller
         return (new MissionResource($mission))
             ->additional([
                 'message' => 'Mission completed successfully.',
+            ]);
+    }
+
+    public function cancel(
+        Request $request,
+        string $id,
+        CancelMissionService $cancelMissionService
+    ) {
+        $mission = $request->user()
+            ->missions()
+            ->findOrFail($id);
+
+        $mission = $cancelMissionService->cancel($mission);
+
+        if ($mission === null) {
+            return response()->json([
+                'message' => 'Only assigned missions can be canceled.',
+            ], 409);
+        }
+
+        return (new MissionResource($mission))
+            ->additional([
+                'message' => 'Mission canceled successfully.',
             ]);
     }
 

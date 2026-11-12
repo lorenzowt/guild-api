@@ -51,4 +51,9 @@ class Mission extends Model
         $this->status = $outcome;
         $this->completed_at = now();
     }
+
+    public function cancel(): void
+{
+    $this->status = MissionStatus::Canceled;
+}
 }
