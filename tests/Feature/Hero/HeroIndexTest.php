@@ -5,6 +5,7 @@ use App\Models\Hero;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Enums\HeroStatus;
+use App\Enums\UserRole;
 
 uses(RefreshDatabase::class);
 
@@ -119,8 +120,11 @@ test('authenticated user do not receive deactivated heroes', function() {
         ->assertJsonPath('message', 'Heroes retrieved successfully.')
         ->assertJsonPath('data.0.id', $activeHero->id);
 });
+
 test('admin receives all heroes including deactivated heroes', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin,
+    ]);
 
     $firstUser = User::factory()->create();
 
