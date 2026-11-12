@@ -79,23 +79,21 @@ class HeroController extends Controller
         ]);
     }
 
-    public function heal(Request $request, string $id)
+    public function heal(Hero $hero)
     {
-        $hero = $request->user()->heroes()->active()->findOrFail($id);
+        Gate::authorize('heal', $hero);
 
-        if (!$hero->isInjured()) {
+        if (! $hero->isInjured()) {
             return response()->json([
-                'message' => "Hero isn't injured."
+                'message' => "Hero isn't injured.",
             ], 409);
         }
 
-        $hero->status = HeroStatus::Available;
-        
+        $hero->heal();
         $hero->save();
 
         return response()->json([
-            'message' => 'Hero healed successfully.'
+            'message' => 'Hero healed successfully.',
         ]);
-
     }
 }
