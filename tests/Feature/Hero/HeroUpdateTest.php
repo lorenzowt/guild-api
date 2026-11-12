@@ -5,6 +5,7 @@ use App\Models\Hero;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Enums\HeroStatus;
+use App\Enums\UserRole;
 
 uses(RefreshDatabase::class);
 
@@ -133,6 +134,41 @@ test('authenticated user cannot update deactivated hero', function() {
     $response->assertNotFound();
 });
 
+test('admin can update any hero including deactivated heroes', function (
+    HeroStatus $status
+) {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin,
+    ]);
 
+    $heroOwner = User::factory()->create();
+
+    $hero = Hero::factory()->create([
+        'user_id' => $heroOwner->id,
+        'status' => $status,
+    ]);
+
+    $response = $this->actingAs($admin, 'api')
+        ->patchJson("/api/heroes/{$hero->id}", [
+            'name' => 'Updated by Admin',
+        ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.id', $hero->id)
+        ->assertJsonPath('data.name', 'Updated by Admin')
+        ->assertJsonPath('data.status', $status->value)
+        ->assertJsonPath('data.user_id', $heroOwner->id)
+        ->assertJsonPath('message', 'Hero updated successfully.');
+
+    $this->assertDatabaseHas('heroes', [
+        'id' => $hero->id,
+        'name' => 'Updated by Admin',
+        'status' => $status->value,
+        'user_id' => $heroOwner->id,
+    ]);
+})->with([
+    'another users active hero' => [HeroStatus::Available],
+    'another users deactivated hero' => [HeroStatus::Deactivated],
+]);
 
 

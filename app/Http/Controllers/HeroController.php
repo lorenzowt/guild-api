@@ -55,17 +55,15 @@ class HeroController extends Controller
             ]);
     }
 
-    public function update(UpdateHeroRequest $request, string $id)
+    public function update(UpdateHeroRequest $request, Hero $hero)
     {
-        $hero = $request->user()->heroes()->active()->findOrFail($id);
+        Gate::authorize('update', $hero);
 
-        $data = $request->validated();
+        $hero->update($request->validated());
 
-        $hero->update($data);
-        
         return (new HeroResource($hero))
             ->additional([
-                'message' => 'Hero updated successfully.'
+                'message' => 'Hero updated successfully.',
             ]);
     }
 

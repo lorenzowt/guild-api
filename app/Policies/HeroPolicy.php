@@ -20,4 +20,16 @@ class HeroPolicy
 
         return Response::denyAsNotFound();
     }
+
+    public function update(User $user, Hero $hero): Response
+    {
+        if (
+            $hero->user_id === $user->id
+            && $hero->status !== HeroStatus::Deactivated
+        ) {
+            return Response::allow();
+        }
+
+        return Response::denyAsNotFound();
+    }
 }
