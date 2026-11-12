@@ -5,6 +5,7 @@ use App\Models\Hero;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Enums\HeroStatus;
+use App\Enums\UserRole;
 
 uses(RefreshDatabase::class);
 
@@ -118,4 +119,61 @@ test('authenticated user do not receive deactivated heroes', function() {
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('message', 'Heroes retrieved successfully.')
         ->assertJsonPath('data.0.id', $activeHero->id);
+});
+
+test('admin receives all heroes including deactivated heroes', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin,
+    ]);
+
+    $firstUser = User::factory()->create();
+
+    $secondUser = User::factory()->create();
+
+    $firstActiveHero = Hero::factory()->create([
+        'user_id' => $firstUser->id,
+        'status' => HeroStatus::Available,
+    ]);
+
+    $deactivatedHero = Hero::factory()->create([
+        'user_id' => $firstUser->id,
+        'status' => HeroStatus::Deactivated,
+    ]);
+
+    $secondActiveHero = Hero::factory()->create([
+        'user_id' => $secondUser->id,
+        'status' => HeroStatus::Available,
+    ]);
+
+    $response = $this->actingAs($admin, 'api')
+        ->getJson('/api/heroes?per_page=10');
+
+    $response->assertOk()
+        ->assertJsonCount(3, 'data')
+        ->assertJsonPath('meta.total', 3)
+        ->assertJsonPath('message', 'Heroes retrieved successfully.');
+
+    $returnedHeroIds = collect($response->json('data'))
+        ->pluck('id')
+        ->sort()
+        ->values()
+        ->all();
+
+    expect($returnedHeroIds)->toBe([
+        $firstActiveHero->id,
+        $deactivatedHero->id,
+        $secondActiveHero->id,
+    ]);
+
+    $returnedUserIds = collect($response->json('data'))
+        ->pluck('user_id')
+        ->unique()
+        ->sort()
+        ->values()
+        ->all();
+
+    expect($returnedUserIds)->toBe([
+        $firstUser->id,
+        $secondUser->id,
+    ]);
 });

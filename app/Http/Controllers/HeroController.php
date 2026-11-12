@@ -20,14 +20,13 @@ class HeroController extends Controller
     {
         $perPage = $request->validated()['per_page'] ?? 10;
 
-        $heroes = $request->user()
-            ->heroes()
-            ->active()
+        $heroes = Hero::query()
+            ->visibleTo($request->user())
             ->paginate($perPage);
 
         return HeroResource::collection($heroes)
             ->additional([
-                'message' => 'Heroes retrieved successfully.'
+                'message' => 'Heroes retrieved successfully.',
             ]);
     }
 

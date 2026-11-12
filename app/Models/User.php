@@ -37,12 +37,12 @@ class User extends Authenticatable implements OAuthenticatable
     {
         return $this->hasMany(Mission::class);
     }
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::Admin;
+    }
+    
     protected function casts(): array
     {
         return [

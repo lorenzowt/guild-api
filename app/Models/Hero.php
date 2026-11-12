@@ -41,9 +41,20 @@ class Hero extends Model
         return $this->belongsToMany(Mission::class);
     }
 
-    public function scopeActive(Builder $query) 
+    public function scopeActive(Builder $query): Builder 
     {
-        $query->where('status', '!=', HeroStatus::Deactivated);
+        return $query->where('status', '!=', HeroStatus::Deactivated);
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->isAdmin()) {
+            return $query;
+        }
+
+        return $query
+            ->where('user_id', $user->id)
+            ->active();
     }
 
     public function isInjured(): bool
