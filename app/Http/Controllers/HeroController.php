@@ -10,6 +10,7 @@ use App\Http\Resources\HeroResource;
 use App\Http\Requests\IndexResourceRequest;
 use App\Http\Requests\UpdateHeroRequest;
 use App\Enums\HeroStatus;
+use Illuminate\Support\Facades\Gate;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -44,13 +45,13 @@ class HeroController extends Controller
             ->setStatusCode(201);
     }
 
-    public function show(Request $request, string $id)
+    public function show(Hero $hero)
     {
-        $hero = $request->user()->heroes()->active()->findOrFail($id);
+        Gate::authorize('view', $hero);
 
         return (new HeroResource($hero))
             ->additional([
-                'message' => 'Hero retrieved successfully.'
+                'message' => 'Hero retrieved successfully.',
             ]);
     }
 
