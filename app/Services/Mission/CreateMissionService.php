@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Mission;
 
 use App\Enums\HeroStatus;
 use App\Models\Mission;

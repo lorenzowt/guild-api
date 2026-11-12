@@ -51,6 +51,26 @@ class Hero extends Model
         return $this->status === HeroStatus::Injured;
     }
 
+     public function levelUp(): void
+    {
+        $this->level = min($this->level + 1, self::MAX_LEVEL);
+    }
+
+    public function levelDown(): void
+    {
+        $this->level = max($this->level - 1, self::MIN_LEVEL);
+    }
+
+    public function makeAvailable(): void
+    {
+        $this->status = HeroStatus::Available;
+    }
+
+    public function injure(): void
+    {
+        $this->status = HeroStatus::Injured;
+    }
+
     protected function casts(): array
     {
         return [
@@ -58,6 +78,5 @@ class Hero extends Model
             'status' => HeroStatus::class,
         ];
     }
-
-
+    
 }

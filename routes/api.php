@@ -38,6 +38,8 @@ Route::post('/missions', [MissionController::class, 'store'])->middleware('auth:
 Route::get('/missions/{mission}', [MissionController::class, 'show'])->middleware('auth:api');
 
 Route::get('/missions', [MissionController::class, 'index'])->middleware('auth:api');
+
+Route::post('/missions/{mission}/complete', [MissionController::class, 'complete'])->middleware('auth:api');
 // Route::middleware('auth:api')->group(function () {
 //     Route::get('/user', function (Request $request) {
 //         return $request->user();
