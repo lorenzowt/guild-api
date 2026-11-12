@@ -36,3 +36,13 @@ test('mission can be completed unsuccessfully', function () {
     expect($mission->status)->toBe(MissionStatus::Failure)
         ->and($mission->completed_at)->not->toBeNull();
 });
+
+test('mission can be canceled', function () {
+    $mission = new Mission();
+
+    $mission->cancel();
+
+    expect($mission->status)->toBe(MissionStatus::Canceled)
+        ->and($mission->completed_at)->toBeNull()
+        ->and($mission->isAssigned())->toBeFalse();
+});
