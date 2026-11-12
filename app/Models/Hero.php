@@ -77,6 +77,11 @@ class Hero extends Model
         $this->status = HeroStatus::Available;
     }
 
+    public function heal(): void
+    {
+        $this->status = HeroStatus::Available;
+    }
+
     public function injure(): void
     {
         $this->status = HeroStatus::Injured;
