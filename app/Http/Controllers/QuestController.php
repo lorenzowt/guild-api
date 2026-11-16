@@ -8,6 +8,7 @@ use App\Http\Requests\Quest\StoreQuestRequest;
 use App\Models\Quest;
 use App\Http\Resources\QuestResource;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\Quest\UpdateQuestRequest;
 
 
 class QuestController extends Controller
@@ -51,6 +52,18 @@ class QuestController extends Controller
         return (new QuestResource($quest))
             ->additional([
                 'message' => 'Quest retrieved successfully.'
+            ]);
+    }
+
+    public function update(UpdateQuestRequest $request, Quest $quest)
+    {
+        Gate::authorize('update', $quest);
+
+        $quest->update($request->validated());
+
+        return (new QuestResource($quest))
+            ->additional([
+                'message' => 'Quest updated successfully.',
             ]);
     }
 }
