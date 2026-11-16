@@ -1,58 +1,206 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Guild API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Guild API is a RESTful Laravel application for managing a fantasy guild.
 
-## About Laravel
+Users can register, manage heroes, accept quests, create missions, and complete or cancel those missions. Administrators can manage users and the quest catalogue, and can access every hero, mission, and user record.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- User registration, login, and logout with Laravel Passport.
+- Role-based access for users and administrators.
+- Hero creation, updates, healing, and deactivation.
+- Quest catalogue with admin creation, updates, and deactivation.
+- Mission creation using available heroes.
+- Mission outcome calculation based on hero levels, unique hero classes, and quest difficulty.
+- Mission completion, cancellation, hero level updates, and hero status updates.
+- User profile management.
+- Administrator user management.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Requirements
 
-## Learning Laravel
+- PHP 8.3 or later
+- Composer
+- MySQL
+- Node.js and npm, if you want to use Laravel frontend tooling
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Installation
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Clone the repository:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/lorenzowt/guild-api.git
+cd guild-api
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Install PHP dependencies:
 
-## Contributing
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Create the environment file:
 
-## Code of Conduct
+```bash
+cp .env.example .env
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Configure your database credentials in `.env`:
 
-## Security Vulnerabilities
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=guild_api
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Create the database, then generate the application key:
+
+```bash
+php artisan key:generate
+```
+
+Run migrations:
+
+```bash
+php artisan migrate
+```
+
+Install Laravel Passport encryption keys and personal access client:
+
+```bash
+php artisan passport:install
+```
+
+Seed demo data:
+
+```bash
+php artisan db:seed
+```
+
+Start the development server:
+
+```bash
+php artisan serve
+```
+
+The API is then available at:
+
+```text
+http://127.0.0.1:8000/api
+```
+
+## Demo Accounts
+
+After running the seeders, use these accounts to test the API:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@guild.test` | `password` |
+| User | `arthas@guild.test` | `password` |
+| User | `jaina@guild.test` | `password` |
+
+## Authentication
+
+The API uses Bearer token authentication through Laravel Passport.
+
+Log in with a seeded account:
+
+```http
+POST /api/login
+Content-Type: application/json
+```
+
+```json
+{
+  "email": "admin@guild.test",
+  "password": "password"
+}
+```
+
+The response contains an access token:
+
+```json
+{
+  "access_token": "your-access-token",
+  "token_type": "Bearer"
+}
+```
+
+Send it in protected requests:
+
+```http
+Authorization: Bearer your-access-token
+```
+
+## Demo Data Reset
+
+To delete all local data, rerun migrations, and reseed the application:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+> Warning: this command permanently deletes all data in the configured database.
+
+## Testing
+
+Run the full Pest test suite:
+
+```bash
+php artisan test
+```
+
+Run a specific test file:
+
+```bash
+php artisan test tests/Feature/Mission/MissionCreateTest.php
+```
+
+## Core Domain Rules
+
+### Heroes
+
+- Heroes begin at level 1 with `available` status.
+- A hero can only join a mission while available.
+- Completing a successful mission increases each assigned hero's level by 1.
+- Completing a failed mission decreases each assigned hero's level by 1, to a minimum of 1, and injures the hero.
+- Cancelling a mission releases assigned heroes without changing their level.
+- Deactivated heroes cannot be used in missions.
+
+### Missions
+
+- A mission requires between 1 and 4 available heroes.
+- A mission can only use an active quest.
+- A mission starts with `assigned` status.
+- Only assigned missions can be completed or cancelled.
+- A mission succeeds when the party level is greater than the quest difficulty.
+- Party level equals the sum of hero levels plus one bonus point for every additional unique hero class.
+
+### Quests
+
+- Only administrators can create, update, or deactivate quests.
+- Deactivated quests are hidden from the user-facing quest catalogue.
+- Deleting a quest deactivates it rather than permanently deleting it.
+
+### User Deletion
+
+- Only administrators can delete user accounts.
+- Deleting a user permanently deletes their heroes, missions, and related mission assignments.
+- Quests created by a deleted user remain available, with their `created_by` value set to `null`.
+
+## Main Endpoints
+
+| Resource | Endpoints |
+| --- | --- |
+| Authentication | Register, login, logout |
+| Heroes | Index, create, show, update, deactivate, heal |
+| Quests | Index, show, create, update, deactivate |
+| Missions | Index, create, show, complete, cancel |
+| Profile | Show and update authenticated user profile |
+| Users | Admin index, show, update, and delete |
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is licensed under the MIT License.
