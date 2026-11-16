@@ -7,6 +7,7 @@ use App\Models\Hero;
 use App\Models\Quest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Enums\UserRole;
 
 uses(RefreshDatabase::class);
 
@@ -244,4 +245,60 @@ test('authenticated user cannot complete a canceled mission', function () {
         'status' => MissionStatus::Canceled->value,
         'completed_at' => null,
     ]);
+});
+
+test('admin can complete another users mission', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin,
+    ]);
+
+    $missionOwner = User::factory()->create();
+
+    $quest = Quest::factory()->create([
+        'difficulty' => 1,
+    ]);
+
+    $mission = $missionOwner->missions()->create([
+        'quest_id' => $quest->id,
+    ]);
+
+    $hero = Hero::factory()->create([
+        'user_id' => $missionOwner->id,
+        'hero_class' => HeroClass::Warrior,
+        'level' => 2,
+        'status' => HeroStatus::OnMission,
+    ]);
+
+    $mission->heroes()->attach($hero->id);
+
+    $response = $this->actingAs($admin, 'api')
+        ->postJson("/api/missions/{$mission->id}/complete");
+
+    $response->assertOk()
+        ->assertJsonPath('data.id', $mission->id)
+        ->assertJsonPath('data.status', MissionStatus::Success->value)
+        ->assertJsonPath('message', 'Mission completed successfully.');
+
+    $this->assertDatabaseHas('missions', [
+        'id' => $mission->id,
+        'user_id' => $missionOwner->id,
+        'status' => MissionStatus::Success->value,
+    ]);
+
+    $this->assertDatabaseHas('heroes', [
+        'id' => $hero->id,
+        'level' => 3,
+        'status' => HeroStatus::Available->value,
+    ]);
+});
+
+test('admin receives not found when completing a nonexistent mission', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin,
+    ]);
+
+    $response = $this->actingAs($admin, 'api')
+        ->postJson('/api/missions/999/complete');
+
+    $response->assertNotFound();
 });
