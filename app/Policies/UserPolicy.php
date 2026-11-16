@@ -16,4 +16,9 @@ class UserPolicy
     {
         return Response::deny();
     }
+
+        public function update(User $user, User $targetUser): Response
+    {
+        return Response::deny();
+    }
 }

@@ -8,6 +8,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\User\UpdateUserRequest;
 
 class UserController extends Controller
 {
@@ -55,4 +56,18 @@ class UserController extends Controller
                 'message' => 'User retrieved successfully.',
             ]);
     }
+
+    public function update(UpdateUserRequest $request, User $user)
+    {
+        Gate::authorize('update', $user);
+
+        $user->update($request->validated());
+
+        return (new UserResource($user->fresh()))
+            ->additional([
+                'message' => 'User updated successfully.',
+            ]);
+    }
+
+
 }
