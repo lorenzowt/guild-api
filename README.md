@@ -139,7 +139,9 @@ Authorization: Bearer your-access-token
 To delete all local data, rerun migrations, and reseed the application:
 
 ```bash
-php artisan migrate:fresh --seed
+php artisan migrate:fresh
+php artisan passport:install --force
+php artisan db:seed
 ```
 
 > Warning: this command permanently deletes all data in the configured database.
