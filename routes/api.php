@@ -46,6 +46,8 @@ Route::post('/missions/{mission}/cancel', [MissionController::class, 'cancel'])-
 Route::post('/quests', [QuestController::class, 'store'])->middleware('auth:api');
 
 Route::patch('/quests/{quest}', [QuestController::class, 'update'])->middleware('auth:api');
+
+Route::delete('/quests/{quest}', [QuestController::class, 'destroy'])->middleware('auth:api');
 // Route::middleware('auth:api')->group(function () {
 //     Route::get('/user', function (Request $request) {
 //         return $request->user();
