@@ -55,6 +55,8 @@ Route::get('/users/me', [UserController::class, 'me'])->middleware('auth:api');
 Route::patch('/users/me', [UserController::class, 'updateMe'])->middleware('auth:api');
 
 Route::get('/users', [UserController::class, 'index'])->middleware('auth:api');
+
+Route::get('/users/{user}', [UserController::class, 'show'])->middleware('auth:api');
 // Route::middleware('auth:api')->group(function () {
 //     Route::get('/user', function (Request $request) {
 //         return $request->user();
