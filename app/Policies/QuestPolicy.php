@@ -17,4 +17,9 @@ class QuestPolicy
     {
         return Response::deny();
     }
+
+    public function delete(User $user, Quest $quest): Response
+    {
+        return Response::deny();
+    }
 }

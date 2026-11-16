@@ -26,6 +26,11 @@ class Quest extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function deactivate(): void
+    {
+        $this->is_active = false;
+    }
+
     public function scopeActive(Builder $query): void 
     {
         $query->where('is_active', true);

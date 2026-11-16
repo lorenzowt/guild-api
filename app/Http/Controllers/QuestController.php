@@ -66,4 +66,16 @@ class QuestController extends Controller
                 'message' => 'Quest updated successfully.',
             ]);
     }
+
+    public function destroy(Quest $quest)
+    {
+        Gate::authorize('delete', $quest);
+
+        $quest->deactivate();
+        $quest->save();
+
+        return response()->json([
+            'message' => 'Quest deleted successfully.',
+        ]);
+    }
 }
