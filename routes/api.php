@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HeroController;
 use App\Http\Controllers\QuestController;
 use App\Http\Controllers\MissionController;
+use App\Http\Controllers\UserController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -48,6 +49,8 @@ Route::post('/quests', [QuestController::class, 'store'])->middleware('auth:api'
 Route::patch('/quests/{quest}', [QuestController::class, 'update'])->middleware('auth:api');
 
 Route::delete('/quests/{quest}', [QuestController::class, 'destroy'])->middleware('auth:api');
+
+Route::get('/users/me', [UserController::class, 'me'])->middleware('auth:api');
 // Route::middleware('auth:api')->group(function () {
 //     Route::get('/user', function (Request $request) {
 //         return $request->user();
