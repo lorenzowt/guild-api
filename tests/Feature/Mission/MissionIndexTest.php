@@ -4,6 +4,7 @@ use App\Models\Hero;
 use App\Models\Quest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Enums\UserRole;
 
 uses(RefreshDatabase::class);
 
@@ -142,4 +143,40 @@ test('unauthenticated user cannot retrieve missions', function () {
     $response = $this->getJson('/api/missions');
 
     $response->assertUnauthorized();
+});
+
+test('admin receives missions from every user', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin,
+    ]);
+
+    $firstUser = User::factory()->create();
+    $secondUser = User::factory()->create();
+
+    $firstMission = $firstUser->missions()->create([
+        'quest_id' => Quest::factory()->create()->id,
+    ]);
+
+    $secondMission = $secondUser->missions()->create([
+        'quest_id' => Quest::factory()->create()->id,
+    ]);
+
+    $adminMission = $admin->missions()->create([
+        'quest_id' => Quest::factory()->create()->id,
+    ]);
+
+    $response = $this->actingAs($admin, 'api')
+        ->getJson('/api/missions');
+
+    $response->assertOk()
+        ->assertJsonCount(3, 'data')
+        ->assertJsonPath('message', 'Missions retrieved successfully.');
+
+    $returnedMissionIds = collect($response->json('data'))
+        ->pluck('id');
+
+    expect($returnedMissionIds)
+        ->toContain($firstMission->id)
+        ->toContain($secondMission->id)
+        ->toContain($adminMission->id);
 });

@@ -6,6 +6,7 @@ use App\Enums\MissionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class Mission extends Model
 {
@@ -53,7 +54,16 @@ class Mission extends Model
     }
 
     public function cancel(): void
-{
-    $this->status = MissionStatus::Canceled;
-}
+    {
+        $this->status = MissionStatus::Canceled;
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->isAdmin()) {
+            return $query;
+        }
+
+        return $query->where('user_id', $user->id);
+    }
 }
