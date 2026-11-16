@@ -5,6 +5,7 @@ use App\Models\Hero;
 use App\Models\Quest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Enums\UserRole;
 
 uses(RefreshDatabase::class);
 
@@ -89,4 +90,47 @@ test('unauthenticated user cannot receive information about a mission', function
     $response = $this->getJson("/api/missions/{$mission->id}");
 
     $response->assertUnauthorized();
+});
+
+test('admin can receive information about another users mission', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin,
+    ]);
+
+    $owner = User::factory()->create();
+
+    $quest = Quest::factory()->create();
+
+    $mission = $owner->missions()->create([
+        'quest_id' => $quest->id,
+    ]);
+
+    $heroes = Hero::factory(2)->create([
+        'user_id' => $owner->id,
+    ]);
+
+    $mission->heroes()->attach($heroes->pluck('id')->all());
+
+    $response = $this->actingAs($admin, 'api')
+        ->getJson("/api/missions/{$mission->id}");
+
+    $response->assertOk()
+        ->assertJson([
+            'data' => [
+                'id' => $mission->id,
+                'quest' => [
+                    'id' => $quest->id,
+                    'title' => $quest->title,
+                ],
+            ],
+            'message' => 'Mission retrieved successfully.',
+        ])
+        ->assertJsonFragment([
+            'id' => $heroes[0]->id,
+            'name' => $heroes[0]->name,
+        ])
+        ->assertJsonFragment([
+            'id' => $heroes[1]->id,
+            'name' => $heroes[1]->name,
+        ]);
 });
