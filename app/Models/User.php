@@ -15,6 +15,7 @@ use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Hero;
 use App\Models\Mission;
+use App\Models\Quest;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
