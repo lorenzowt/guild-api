@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\IndexResourceRequest;
+use App\Http\Requests\Quest\StoreQuestRequest;
 use App\Models\Quest;
 use App\Http\Resources\QuestResource;
 
@@ -20,6 +21,24 @@ class QuestController extends Controller
                 'message' => 'Quests retrieved successfully.'
             ]);
 
+    }
+
+    public function store(StoreQuestRequest $request)
+    {
+        Gate::authorize('create', Quest::class);
+
+        $quest = Quest::create([
+            ...$request->validated(),
+            'created_by' => $request->user()->id,
+            'is_active' => true,
+        ]);
+
+        return (new QuestResource($quest))
+            ->additional([
+                'message' => 'Quest created successfully.',
+            ])
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function show(Request $request, string $id)
