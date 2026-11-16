@@ -45,4 +45,14 @@ class UserController extends Controller
                 'message' => 'Users retrieved successfully.',
             ]);
     }
+
+    public function show(User $user)
+    {
+        Gate::authorize('view', $user);
+
+        return (new UserResource($user))
+            ->additional([
+                'message' => 'User retrieved successfully.',
+            ]);
+    }
 }

@@ -11,4 +11,9 @@ class UserPolicy
     {
         return Response::deny();
     }
+
+    public function view(User $user, User $targetUser): Response
+    {
+        return Response::deny();
+    }
 }
