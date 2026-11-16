@@ -16,4 +16,13 @@ class MissionPolicy
 
         return Response::denyAsNotFound();
     }
+
+    public function complete(User $user, Mission $mission): Response
+    {
+        if ($mission->user_id === $user->id) {
+            return Response::allow();
+        }
+
+        return Response::denyAsNotFound();
+    }
 }

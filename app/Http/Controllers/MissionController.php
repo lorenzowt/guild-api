@@ -14,6 +14,7 @@ use App\Services\Mission\CancelMissionService;
 use Illuminate\Support\Facades\Gate;
 
 
+
 class MissionController extends Controller
 {
     public function index(IndexResourceRequest $request)
@@ -61,13 +62,10 @@ class MissionController extends Controller
     }
 
     public function complete(
-        Request $request,
-        string $id,
+        Mission $mission,
         CompleteMissionService $completeMissionService
     ) {
-        $mission = $request->user()
-            ->missions()
-            ->findOrFail($id);
+        Gate::authorize('complete', $mission);
 
         $mission = $completeMissionService->complete($mission);
 
