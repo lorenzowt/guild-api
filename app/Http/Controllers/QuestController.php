@@ -7,6 +7,8 @@ use App\Http\Requests\IndexResourceRequest;
 use App\Http\Requests\Quest\StoreQuestRequest;
 use App\Models\Quest;
 use App\Http\Resources\QuestResource;
+use Illuminate\Support\Facades\Gate;
+
 
 class QuestController extends Controller
 {
@@ -27,11 +29,12 @@ class QuestController extends Controller
     {
         Gate::authorize('create', Quest::class);
 
-        $quest = Quest::create([
-            ...$request->validated(),
-            'created_by' => $request->user()->id,
-            'is_active' => true,
-        ]);
+        $quest = $request->user()
+            ->createdQuests()
+            ->create([
+                ...$request->validated(),
+                'is_active' => true,
+            ]);
 
         return (new QuestResource($quest))
             ->additional([
