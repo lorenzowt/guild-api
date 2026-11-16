@@ -19,10 +19,10 @@ class MissionController extends Controller
     {
         $perPage = $request->validated()['per_page'] ?? 10;
 
-        $missions = $request->user()
-            ->missions()
-            ->with(['quest', 'heroes'])
-            ->paginate($perPage);
+    $missions = Mission::query()
+        ->visibleTo($request->user())
+        ->with(['quest', 'heroes'])
+        ->paginate($perPage);
 
         return MissionResource::collection($missions)
             ->additional([
