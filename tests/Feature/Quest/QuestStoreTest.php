@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+
 uses(RefreshDatabase::class);
 
 test('admin can create a new active quest', function () {
@@ -74,7 +75,7 @@ test('admin cannot create a quest with invalid data', function (array $payload, 
 
     $this->assertDatabaseCount('quests', 0);
 })->with([
-    'missing title' => [[], 'title'],
+    'missing title' => [['title' => null], 'title'],
     'empty title' => [['title' => ''], 'title'],
     'title is too long' => [['title' => str_repeat('a', 101)], 'title'],
     'title has invalid type' => [['title' => 123], 'title'],
