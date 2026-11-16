@@ -11,6 +11,7 @@ use App\Http\Resources\MissionResource;
 use App\Http\Requests\IndexResourceRequest;
 use App\Services\Mission\CompleteMissionService;
 use App\Services\Mission\CancelMissionService;
+use Illuminate\Support\Facades\Gate;
 
 
 class MissionController extends Controller
@@ -47,16 +48,15 @@ class MissionController extends Controller
         
     }
 
-    public function show(Request $request, string $id)
+    public function show(Mission $mission)
     {
-        $mission = $request->user()
-            ->missions()
-            ->with(['quest', 'heroes'])
-            ->findOrFail($id);
+        Gate::authorize('view', $mission);
+
+        $mission->load(['quest', 'heroes']);
 
         return (new MissionResource($mission))
             ->additional([
-            'message' => 'Mission retrieved successfully.',
+                'message' => 'Mission retrieved successfully.',
             ]);
     }
 
