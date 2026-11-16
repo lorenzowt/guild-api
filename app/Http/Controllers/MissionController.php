@@ -82,13 +82,10 @@ class MissionController extends Controller
     }
 
     public function cancel(
-        Request $request,
-        string $id,
+        Mission $mission,
         CancelMissionService $cancelMissionService
     ) {
-        $mission = $request->user()
-            ->missions()
-            ->findOrFail($id);
+        Gate::authorize('cancel', $mission);
 
         $mission = $cancelMissionService->cancel($mission);
 
