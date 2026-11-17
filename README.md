@@ -203,6 +203,29 @@ php artisan test tests/Feature/Mission/MissionCreateTest.php
 | Profile | Show and update authenticated user profile |
 | Users | Admin index, show, update, and delete |
 
+## API Documentation
+
+The complete API specification is available in [docs/openapi.yaml](docs/openapi.yaml).
+
+To preview and test the API interactively:
+
+1. Start the Laravel server:
+
+   ```bash
+   php artisan serve
+   ```
+
+2. Open [Swagger Editor](https://editor.swagger.io/).
+
+3. Paste the contents of `docs/openapi.yaml`.
+
+4. Log in through `POST /api/login` using one of the demo accounts.
+
+5. Copy the returned `access_token`.
+
+6. Click **Authorize** in Swagger Editor and paste the token value. Swagger automatically adds the `Bearer` prefix.
+
+7. Use **Try it out** on any endpoint and click **Execute**.
 ## License
 
 This project is licensed under the MIT License.

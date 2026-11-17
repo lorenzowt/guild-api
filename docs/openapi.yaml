@@ -1,0 +1,1223 @@
+openapi: 3.1.0
+
+info:
+  title: Guild API
+  version: 1.0.0
+  description: |
+    REST API for managing guild users, heroes, quests, and missions.
+
+    Authentication uses Laravel Passport Bearer tokens. Send the token in:
+    `Authorization: Bearer {access_token}`
+
+servers:
+  - url: http://127.0.0.1:8000/api
+    description: Local development server
+
+tags:
+  - name: Authentication
+  - name: Heroes
+  - name: Quests
+  - name: Missions
+  - name: Profile
+  - name: Users
+
+security:
+  - bearerAuth: []
+
+paths:
+  /register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /login:
+    post:
+      tags: [Authentication]
+      summary: Log in and receive an access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /logout:
+    post:
+      tags: [Authentication]
+      summary: Log out the authenticated user
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /user:
+    get:
+      tags: [Profile]
+      summary: Retrieve the authenticated user
+      description: Deprecated endpoint. Use `GET /users/me` instead.
+      deprecated: true
+      responses:
+        '200':
+          description: Authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me:
+    get:
+      tags: [Profile]
+      summary: Retrieve the authenticated user's profile
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      tags: [Profile]
+      summary: Update the authenticated user's profile
+      description: |
+        Updates one or more profile fields. The user's role cannot be changed
+        through this endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /users:
+    get:
+      tags: [Users]
+      summary: Retrieve all registered users
+      description: Admin only.
+      parameters:
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUsersResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /users/{user}:
+    get:
+      tags: [Users]
+      summary: Retrieve a specific user's profile
+      description: Admin only.
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Users]
+      summary: Update a user's profile
+      description: |
+        Admin only. Updates one or more fields. Role changes are intentionally
+        not supported by this endpoint.
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserUpdateRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags: [Users]
+      summary: Delete a user account
+      description: |
+        Admin only. Deleting a user also deletes their heroes, missions, and
+        related pivot records.
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /heroes:
+    get:
+      tags: [Heroes]
+      summary: Retrieve all accessible heroes
+      description: |
+        Regular users receive only their own active heroes. Admins receive
+        active heroes from all users.
+      parameters:
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Heroes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHeroesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    post:
+      tags: [Heroes]
+      summary: Create a new hero
+      description: Creates a hero owned by the authenticated user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeroCreateRequest'
+      responses:
+        '201':
+          description: Hero created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeroResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /heroes/{hero}:
+    get:
+      tags: [Heroes]
+      summary: Retrieve a hero's details
+      description: Users can retrieve only their own heroes. Admins can retrieve any hero.
+      parameters:
+        - $ref: '#/components/parameters/HeroId'
+      responses:
+        '200':
+          description: Hero retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeroResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Heroes]
+      summary: Update a hero
+      description: Users can update only their own heroes. Admins can update any hero.
+      parameters:
+        - $ref: '#/components/parameters/HeroId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeroUpdateRequest'
+      responses:
+        '200':
+          description: Hero updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeroResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags: [Heroes]
+      summary: Deactivate a hero
+      description: Users can deactivate only their own heroes. Admins can deactivate any hero.
+      parameters:
+        - $ref: '#/components/parameters/HeroId'
+      responses:
+        '200':
+          description: Hero deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeroResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /heroes/{hero}/heal:
+    post:
+      tags: [Heroes]
+      summary: Heal an injured hero
+      description: |
+        Users can heal only their own heroes. Admins can heal any hero.
+        The hero must have the `injured` status.
+      parameters:
+        - $ref: '#/components/parameters/HeroId'
+      responses:
+        '200':
+          description: Hero healed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeroResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Hero is not injured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /quests:
+    get:
+      tags: [Quests]
+      summary: Retrieve available quests
+      description: Returns active quests.
+      parameters:
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Quests retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuestsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    post:
+      tags: [Quests]
+      summary: Create a quest
+      description: Admin only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestCreateRequest'
+      responses:
+        '201':
+          description: Quest created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /quests/{quest}:
+    get:
+      tags: [Quests]
+      summary: Retrieve a quest's details
+      parameters:
+        - $ref: '#/components/parameters/QuestId'
+      responses:
+        '200':
+          description: Quest retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Quests]
+      summary: Update a quest
+      description: Admin only.
+      parameters:
+        - $ref: '#/components/parameters/QuestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestUpdateRequest'
+      responses:
+        '200':
+          description: Quest updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags: [Quests]
+      summary: Remove a quest from the available catalogue
+      description: Admin only. This deactivates the quest instead of permanently deleting it.
+      parameters:
+        - $ref: '#/components/parameters/QuestId'
+      responses:
+        '200':
+          description: Quest deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /missions:
+    get:
+      tags: [Missions]
+      summary: Retrieve all accessible missions
+      description: |
+        Regular users receive only their own missions. Admins receive missions
+        from every user.
+      parameters:
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Missions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMissionsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    post:
+      tags: [Missions]
+      summary: Create a mission
+      description: |
+        Creates a mission using an active quest and one to four available heroes
+        owned by the authenticated user. Selected heroes are set to `on_mission`.
+
+        Admins may create missions, but currently must also select their own heroes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MissionCreateRequest'
+      responses:
+        '201':
+          description: Mission created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissionCreatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /missions/{mission}:
+    get:
+      tags: [Missions]
+      summary: Retrieve a mission's details
+      description: Users can retrieve only their own missions. Admins can retrieve any mission.
+      parameters:
+        - $ref: '#/components/parameters/MissionId'
+      responses:
+        '200':
+          description: Mission retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /missions/{mission}/complete:
+    post:
+      tags: [Missions]
+      summary: Complete a mission
+      description: |
+        Completes an assigned mission and calculates its outcome from quest
+        difficulty, hero levels, and party class diversity.
+
+        A successful mission levels heroes up and makes them available.
+        A failed mission levels heroes down and injures them.
+      parameters:
+        - $ref: '#/components/parameters/MissionId'
+      responses:
+        '200':
+          description: Mission completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Mission is not assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /missions/{mission}/cancel:
+    post:
+      tags: [Missions]
+      summary: Cancel a mission
+      description: |
+        Cancels an assigned mission and releases its heroes back to `available`.
+        Canceled missions cannot be completed.
+      parameters:
+        - $ref: '#/components/parameters/MissionId'
+      responses:
+        '200':
+          description: Mission canceled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Mission is not assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    UserId:
+      name: user
+      in: path
+      required: true
+      schema:
+        type: integer
+      example: 1
+
+    HeroId:
+      name: hero
+      in: path
+      required: true
+      schema:
+        type: integer
+      example: 1
+
+    QuestId:
+      name: quest
+      in: path
+      required: true
+      schema:
+        type: integer
+      example: 1
+
+    MissionId:
+      name: mission
+      in: path
+      required: true
+      schema:
+        type: integer
+      example: 1
+
+    PerPage:
+      name: per_page
+      in: query
+      required: false
+      description: Number of results per page.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+
+  responses:
+    Unauthorized:
+      description: Authentication is required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Unauthenticated.
+
+    Forbidden:
+      description: The authenticated user does not have permission
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: This action is unauthorized.
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Not Found.
+
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - password_confirmation
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: Arthas Menethil
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: arthas@example.com
+        password:
+          type: string
+          format: password
+          maxLength: 100
+          example: password
+        password_confirmation:
+          type: string
+          format: password
+          example: password
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: arthas@example.com
+        password:
+          type: string
+          format: password
+          example: password
+
+    AuthToken:
+      type: object
+      required:
+        - access_token
+        - token_type
+      properties:
+        access_token:
+          type: string
+          example: 1|example-personal-access-token
+        token_type:
+          type: string
+          example: Bearer
+
+    User:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - role
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Arthas Menethil
+        email:
+          type: string
+          format: email
+          example: arthas@example.com
+        role:
+          type: string
+          enum: [user, admin]
+          example: user
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ProfileUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: Arthas the Lich King
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: lichking@example.com
+        password:
+          type: string
+          format: password
+          maxLength: 100
+          example: new-password
+        password_confirmation:
+          type: string
+          format: password
+          example: new-password
+
+    AdminUserUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: Arthas the Lich King
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: lichking@example.com
+        password:
+          type: string
+          format: password
+          maxLength: 100
+          example: new-password
+        password_confirmation:
+          type: string
+          format: password
+          example: new-password
+
+    Hero:
+      type: object
+      required:
+        - id
+        - name
+        - hero_class
+        - level
+        - status
+        - user_id
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          example: 2
+        name:
+          type: string
+          example: Arthas
+        hero_class:
+          type: string
+          enum: [cleric, mage, rogue, warrior]
+          example: warrior
+        level:
+          type: integer
+          minimum: 1
+          example: 3
+        status:
+          type: string
+          enum: [available, on_mission, injured, deactivated]
+          example: available
+        user_id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    HeroCreateRequest:
+      type: object
+      required:
+        - name
+        - hero_class
+      properties:
+        name:
+          type: string
+          maxLength: 45
+          example: Arthas
+        hero_class:
+          type: string
+          enum: [cleric, mage, rogue, warrior]
+          example: warrior
+
+    HeroUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          maxLength: 45
+          example: Arthas the Lich King
+        hero_class:
+          type: string
+          enum: [cleric, mage, rogue, warrior]
+          example: warrior
+
+    Quest:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - boss
+        - difficulty
+        - is_active
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Defeat the Ancient Dragon
+        description:
+          type: string
+          example: An ancient dragon is terrorizing the northern villages.
+        boss:
+          type: string
+          example: Ancient Dragon
+        difficulty:
+          type: integer
+          minimum: 1
+          maximum: 10
+          example: 8
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    QuestCreateRequest:
+      type: object
+      required:
+        - title
+        - description
+        - boss
+        - difficulty
+      properties:
+        title:
+          type: string
+          maxLength: 100
+          example: Defeat the Ancient Dragon
+        description:
+          type: string
+          example: An ancient dragon is terrorizing the northern villages.
+        boss:
+          type: string
+          maxLength: 45
+          example: Ancient Dragon
+        difficulty:
+          type: integer
+          minimum: 1
+          maximum: 10
+          example: 8
+
+    QuestUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          maxLength: 100
+          example: Defeat the Ancient Dragon
+        description:
+          type: string
+          example: Updated quest description.
+        boss:
+          type: string
+          maxLength: 45
+          example: Ancient Dragon
+        difficulty:
+          type: integer
+          minimum: 1
+          maximum: 10
+          example: 9
+        is_active:
+          type: boolean
+          example: true
+
+    MissionQuest:
+      type: object
+      required: [id, title]
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Defeat the Ancient Dragon
+
+    MissionHero:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+          example: 2
+        name:
+          type: string
+          example: Arthas
+
+    Mission:
+      type: object
+      required:
+        - id
+        - status
+        - quest
+        - heroes
+        - completed_at
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          enum: [assigned, success, failure, canceled]
+          example: assigned
+        quest:
+          $ref: '#/components/schemas/MissionQuest'
+        heroes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MissionHero'
+        completed_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+
+    MissionCreateRequest:
+      type: object
+      required:
+        - quest_id
+        - hero_ids
+      properties:
+        quest_id:
+          type: integer
+          example: 1
+        hero_ids:
+          type: array
+          minItems: 1
+          maxItems: 4
+          uniqueItems: true
+          items:
+            type: integer
+          example: [2, 3]
+
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: Successfully completed.
+
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    ValidationError:
+      type: object
+      required: [message, errors]
+      properties:
+        message:
+          type: string
+          example: The given data was invalid.
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            email:
+              - The email field must be a valid email address.
+
+    PaginationLinks:
+      type: object
+      properties:
+        first:
+          type: [string, 'null']
+        last:
+          type: [string, 'null']
+        prev:
+          type: [string, 'null']
+        next:
+          type: [string, 'null']
+
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        from:
+          type: [integer, 'null']
+          example: 1
+        last_page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 10
+        to:
+          type: [integer, 'null']
+          example: 10
+        total:
+          type: integer
+          example: 10
+
+    HeroResponse:
+      type: object
+      required: [data, message]
+      properties:
+        data:
+          $ref: '#/components/schemas/Hero'
+        message:
+          type: string
+          example: Hero retrieved successfully.
+
+    QuestResponse:
+      type: object
+      required: [data, message]
+      properties:
+        data:
+          $ref: '#/components/schemas/Quest'
+        message:
+          type: string
+          example: Quest retrieved successfully.
+
+    MissionResponse:
+      type: object
+      required: [data, message]
+      properties:
+        data:
+          $ref: '#/components/schemas/Mission'
+        message:
+          type: string
+          example: Mission retrieved successfully.
+
+    MissionCreatedResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Mission'
+
+    UserResponse:
+      type: object
+      required: [data, message]
+      properties:
+        data:
+          $ref: '#/components/schemas/User'
+        message:
+          type: string
+          example: User retrieved successfully.
+
+    PaginatedHeroesResponse:
+      type: object
+      required: [data, links, meta, message]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hero'
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        message:
+          type: string
+          example: Heroes retrieved successfully.
+
+    PaginatedQuestsResponse:
+      type: object
+      required: [data, links, meta, message]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Quest'
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        message:
+          type: string
+          example: Quests retrieved successfully.
+
+    PaginatedMissionsResponse:
+      type: object
+      required: [data, links, meta, message]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Mission'
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        message:
+          type: string
+          example: Missions retrieved successfully.
+
+    PaginatedUsersResponse:
+      type: object
+      required: [data, links, meta, message]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        message:
+          type: string
+          example: Users retrieved successfully.
