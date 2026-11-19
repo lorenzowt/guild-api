@@ -988,7 +988,7 @@ components:
 
     MissionHero:
       type: object
-      required: [id, name]
+      required: [id, name, hero_class]
       properties:
         id:
           type: integer
@@ -996,6 +996,10 @@ components:
         name:
           type: string
           example: Arthas
+        hero_class:
+          type: string
+          enum: [cleric, mage, rogue, warrior]
+          example: warrior
 
     Mission:
       type: object
