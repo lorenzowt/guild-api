@@ -182,3 +182,33 @@ test('admin receives missions from every user', function () {
         ->toContain($secondMission->id)
         ->toContain($adminMission->id);
 });
+
+test('authenticated user receives their newest missions first', function () {
+    $user = User::factory()->create();
+
+    $oldestQuest = Quest::factory()->create();
+    $newestQuest = Quest::factory()->create();
+
+    $oldestMission = $user->missions()->create([
+        'quest_id' => $oldestQuest->id,
+    ]);
+
+    $newestMission = $user->missions()->create([
+        'quest_id' => $newestQuest->id,
+    ]);
+
+    $oldestMission->forceFill([
+        'created_at' => now()->subMinute(),
+    ])->save();
+
+    $newestMission->forceFill([
+        'created_at' => now(),
+    ])->save();
+
+    $response = $this->actingAs($user, 'api')
+        ->getJson('/api/missions');
+
+    $response->assertOk()
+        ->assertJsonPath('data.0.id', $newestMission->id)
+        ->assertJsonPath('data.1.id', $oldestMission->id);
+});
