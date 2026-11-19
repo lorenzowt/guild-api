@@ -483,7 +483,7 @@ paths:
       summary: Retrieve all accessible missions
       description: |
         Regular users receive only their own missions. Admins receive missions
-        from every user.
+        from every user. Results are ordered from newest to oldest.
       parameters:
         - $ref: '#/components/parameters/PerPage'
       responses:
