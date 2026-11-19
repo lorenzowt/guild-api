@@ -52,6 +52,7 @@ test('authenticated user can receive information about their mission', function 
                     '*' => [
                         'id',
                         'name',
+                        'hero_class',
                     ],
                 ],
                 'completed_at',
@@ -128,9 +129,11 @@ test('admin can receive information about another users mission', function () {
         ->assertJsonFragment([
             'id' => $heroes[0]->id,
             'name' => $heroes[0]->name,
+            'hero_class' => $heroes[0]->hero_class->value,
         ])
         ->assertJsonFragment([
             'id' => $heroes[1]->id,
             'name' => $heroes[1]->name,
+            'hero_class' => $heroes[1]->hero_class->value,
         ]);
 });

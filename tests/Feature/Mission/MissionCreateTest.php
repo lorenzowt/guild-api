@@ -45,7 +45,7 @@ test('authenticated user can create a mission with available heroes', function (
                 'status',
                 'quest' => ['id', 'title'],
                 'heroes' => [
-                    '*' => ['id', 'name'],
+                    '*' => ['id', 'name', 'hero_class'],
                 ],
                 'completed_at',
                 'created_at',
