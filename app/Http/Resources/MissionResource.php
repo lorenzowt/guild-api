@@ -21,6 +21,7 @@ class MissionResource extends JsonResource
                 return $this->heroes->map(fn ($hero) => [
                     'id' => $hero->id,
                     'name' => $hero->name,
+                    'hero_class' => $hero->hero_class->value
                 ]);
             }),
             'completed_at' => $this->completed_at?->toISOString(),

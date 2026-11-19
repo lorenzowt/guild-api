@@ -105,10 +105,12 @@ test('authenticated user receives mission quest and assigned hero information', 
         ->assertJsonFragment([
             'id' => $heroes[0]->id,
             'name' => $heroes[0]->name,
+            'hero_class' => $heroes[0]->hero_class->value,
         ])
         ->assertJsonFragment([
             'id' => $heroes[1]->id,
             'name' => $heroes[1]->name,
+            'hero_class' => $heroes[0]->hero_class->value,
         ]);
 });
 
