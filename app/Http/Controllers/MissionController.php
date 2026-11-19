@@ -24,6 +24,7 @@ class MissionController extends Controller
     $missions = Mission::query()
         ->visibleTo($request->user())
         ->with(['quest', 'heroes'])
+        ->latest()
         ->paginate($perPage);
 
         return MissionResource::collection($missions)
