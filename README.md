@@ -20,6 +20,7 @@ Users can register, manage heroes, accept quests, create missions, and complete 
 
 - PHP 8.3 or later
 - Composer
+- PHP PDO SQLite extension (`pdo_sqlite`) for running tests
 - MySQL
 - Node.js and npm, if you want to use Laravel frontend tooling
 
@@ -148,11 +149,45 @@ php artisan db:seed
 
 ## Testing
 
-Run the full Pest test suite:
+The tests use an in-memory SQLite database configured in `phpunit.xml`. You do
+not need MySQL, a database file, migrations, or seed data to run the suite.
+PHP 8.3 or later, Composer, and the PHP CLI's `pdo_sqlite` extension are
+required. The tests also need an application key and Passport encryption keys.
+
+From the project directory of a fresh clone, run these commands (they work in
+Windows PowerShell as well as macOS and Linux terminals):
 
 ```bash
-php artisan test
+composer install
+php -r "file_exists('.env') || copy('.env.example', '.env');"
+php artisan key:generate
+php artisan passport:keys
+composer test
 ```
+
+Run the key-generation commands once when setting up a fresh clone. If you
+already have an application key or Passport keys, keep them: replacing keys in
+an existing installation can invalidate encrypted data or access tokens.
+`passport:keys` does not overwrite existing keys unless forced.
+
+Composer reports a missing `ext-pdo_sqlite` during installation. To check the
+PHP CLI's extensions and configuration file, run:
+
+```bash
+php -m
+php --ini
+```
+
+On Windows, if `pdo_sqlite` is missing, open the loaded `php.ini` shown by
+`php --ini` and enable `extension=pdo_sqlite` (remove the leading `;` if
+present). Make sure the extension is installed for that PHP distribution, open
+a new terminal, and run `composer install` again. If `php --ini` shows no
+loaded configuration file, create one using the PHP distribution's supplied
+`php.ini-development` template. If several PHP versions are installed, ensure
+Composer and the terminal use the same one.
+
+The `composer test` command clears cached Laravel configuration before running
+the tests. It does not require Node.js or npm.
 
 Run a specific test file:
 
