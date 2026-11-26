@@ -74,6 +74,18 @@ Install Laravel Passport encryption keys and personal access client:
 php artisan passport:install
 ```
 
+Passport asks whether to run all pending database migrations. If you already ran
+`php artisan migrate` above, you can answer **no**. In that case Passport also
+skips its personal access client prompt, so create the client separately:
+
+```bash
+php artisan passport:client --personal
+```
+
+Alternatively, answer **yes** to the migration prompt: Laravel runs only
+pending migrations, then asks whether to create the personal access client.
+Answer **yes** to that prompt.
+
 Seed demo data:
 
 ```bash
@@ -187,7 +199,9 @@ loaded configuration file, create one using the PHP distribution's supplied
 Composer and the terminal use the same one.
 
 The `composer test` command clears cached Laravel configuration before running
-the tests. It does not require Node.js or npm.
+the tests. It does not require Node.js or npm. For test setup, use
+`passport:keys` as shown above; `passport:install` and a separately created
+personal access client are not needed by the test suite.
 
 Run a specific test file:
 
